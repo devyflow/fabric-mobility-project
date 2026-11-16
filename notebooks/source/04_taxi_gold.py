@@ -51,6 +51,14 @@ assert effective_fx.count() == len(days)
 # from this reporting window and counted explicitly below.
 
 # CELL code
+zones_raw = (spark.read.option("header", True)
+    .csv("Files/bronze/taxi_zones/taxi_zone_lookup.csv"))
+zones = zones_raw.select(F.expr("try_cast(LocationID as int)").alias("zone_id"),
+    F.col("Borough").alias("borough"), F.col("Zone").alias("zone_name"), "service_zone")
+if zones.where("zone_id IS NULL OR zone_id = -1").limit(1).count() or zones.groupBy("zone_id").count().where("count > 1").limit(1).count():
+    raise ValueError("Taxi zone lookup contains invalid or duplicate keys")
+zones = zones.unionByName(spark.createDataFrame([(-1, "Unknown", "Unknown", None)],
+    "zone_id int, borough string, zone_name string, service_zone string"))
 trips = spark.table("silver_taxi_trips")
 quality_counts = (trips.agg(
     F.count("*").alias("silver_rows"),
@@ -61,7 +69,8 @@ quality_counts = (trips.agg(
 assert quality_counts.silver_rows == quality_counts.missing_pickup_date + quality_counts.in_reporting_window + quality_counts.outside_reporting_window
 base = (trips.where(F.col("pickup_date").between(start, end))
         .withColumnRenamed("pickup_date", "report_date")
-        .withColumn("pickup_zone_id", F.coalesce(F.expr("try_cast(PULocationID as int)"), F.lit(-1))))
+        .join(F.broadcast(zones.select("zone_id")), F.expr("try_cast(PULocationID as int) = zone_id"), "left")
+        .withColumn("pickup_zone_id", F.coalesce(F.col("zone_id"), F.lit(-1))))
 daily = (base.groupBy("report_date", "pickup_zone_id").agg(
     F.count("*").alias("trip_count"),
     F.count("fare_usd").alias("known_base_fare_count"),
@@ -87,7 +96,7 @@ print(quality_counts.asDict())
 # after joint taxi and air-quality checks pass.
 
 # CELL code
-for name, frame in (("gold_dim_date", dates), ("gold_dim_fx", effective_fx),
+for name, frame in (("gold_dim_date", dates), ("gold_dim_fx", effective_fx), ("gold_dim_zone", zones),
                     ("gold_fact_taxi_daily", daily), ("gold_taxi_hourly", hourly)):
     frame.write.format("delta").mode("overwrite").saveAsTable(name)
 display(daily.orderBy(F.col("trip_count").desc()).limit(10))

@@ -6,7 +6,7 @@ Use the project Warehouse and run `01_create_star.sql`. The two facts have diffe
 | --- | --- |
 | DimDate | gold_dim_date |
 | DimFX | gold_dim_fx |
-| DimZone | TLC zone lookup plus an unknown zone record |
+| DimZone | gold_dim_zone, built from the TLC lookup plus an unknown zone record |
 | DimGDP | silver_gdp, published to the reporting schema without its ingestion metadata |
 | DimAirLocation | gold_dim_air_location |
 | FactTaxiDaily | gold_fact_taxi_daily |
