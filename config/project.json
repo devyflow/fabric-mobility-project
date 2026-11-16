@@ -1,0 +1,13 @@
+{
+  "project_name": "fabric-mobility-environment",
+  "reporting_timezone": "America/New_York",
+  "sample_month": "2025-06",
+  "sample_start": "2025-06-01",
+  "sample_end": "2025-06-07",
+  "gdp_start_year": 2024,
+  "gdp_end_year": 2025,
+  "country": "USA",
+  "openaq_bbox": "-74.26,40.49,-73.70,40.92",
+  "openaq_sensor_ids": [],
+  "notes": "Development sample only. Final dates and sensors require authenticated OpenAQ coverage verification. The bounding box includes nearby areas; membership in NYC must be verified."
+}

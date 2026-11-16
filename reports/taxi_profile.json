@@ -1,0 +1,15 @@
+{
+  "scope": "Local profile of actual source Parquet, not a Fabric run",
+  "file": "1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6.parquet",
+  "source_rows": 4322960,
+  "zero_distance_rows": 134896,
+  "zero_distance_positive_fare_rows": 109304,
+  "missing_fare_rows": 0,
+  "negative_fare_rows": 275565,
+  "first_recorded_pickup": "2025-05-31 22:34:26",
+  "last_recorded_pickup": "2025-06-30 23:59:59",
+  "example_zero_distance_positive_fare": {
+    "distance_miles": 0,
+    "base_fare_usd": 37.5
+  }
+}

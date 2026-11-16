@@ -1,0 +1,49 @@
+{
+  "run_id": "1eb59a6ce766414ab28ef7297a42f18d",
+  "checked_at_utc": "2026-11-16T05:08:48.719320+00:00",
+  "scope": "Local source verification, not Fabric deployment",
+  "checks": [
+    {
+      "source": "taxi_zones",
+      "status": "passed",
+      "rows": 265,
+      "columns": [
+        "LocationID",
+        "Borough",
+        "Zone",
+        "service_zone"
+      ]
+    },
+    {
+      "source": "world_bank_gdp",
+      "status": "passed",
+      "rows": 2,
+      "pages": 1,
+      "non_null_values": 2,
+      "years": [
+        "2025",
+        "2024"
+      ]
+    },
+    {
+      "source": "ecb_fx",
+      "status": "passed",
+      "rows": 5,
+      "rate_unit": "USD per EUR",
+      "first_date": "2025-06-02",
+      "last_date": "2025-06-06"
+    },
+    {
+      "source": "nyc_taxi",
+      "status": "passed",
+      "bytes": 73542954,
+      "bronze_path": "nyc_taxi/1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6.parquet",
+      "check": "downloaded; Parquet boundary markers verified; row profiling pending"
+    },
+    {
+      "source": "openaq",
+      "status": "blocked",
+      "reason": "OPENAQ_API_KEY is not configured; no authenticated request was attempted"
+    }
+  ]
+}
