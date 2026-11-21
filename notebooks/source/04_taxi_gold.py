@@ -6,7 +6,7 @@
 
 # CELL code
 start_date = "2025-06-01"
-end_date = "2025-06-07"    # Inclusive, development sample
+end_date = "2025-06-30"    # Inclusive, development sample
 max_fx_age_days = 7
 
 # CELL code

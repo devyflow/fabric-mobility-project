@@ -1,0 +1,43 @@
+{
+  "scope": "Actual public TLC record traced through local processing",
+  "source_sha256": "1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6",
+  "source_row_number_convention": "DuckDB file_row_number, zero-based within the original file",
+  "source_and_silver": {
+    "file_row_number": 158,
+    "tpep_pickup_datetime": "2025-06-01 00:41:47",
+    "PULocationID": 209,
+    "trip_distance": 0.0,
+    "fare_amount": 37.5,
+    "total_amount": 39.0,
+    "pickup_date": "2025-06-01",
+    "pickup_hour": 0,
+    "pickup_zone_id": 209,
+    "fare_usd": "37.5000",
+    "total_charged_usd": "39.0000",
+    "quality_flags": [
+      "zero_distance"
+    ]
+  },
+  "gold_group": {
+    "report_date": "2025-06-01",
+    "pickup_zone_id": 209,
+    "trip_count": 409,
+    "known_base_fare_count": 409,
+    "known_charge_count": 409,
+    "zero_distance_trip_count": 5,
+    "base_fare_usd": "7756.5100",
+    "total_charged_usd": "11014.5900",
+    "base_fare_eur": "6840.5591",
+    "total_charged_eur": "9713.8989",
+    "fx_covered_charge_count": 409,
+    "fx_covered_charge_usd": "11014.5900"
+  },
+  "chosen_fx": {
+    "report_date": "2025-06-01",
+    "currency_pair": "USD/EUR",
+    "source_rate_date": "2025-05-30",
+    "usd_per_eur": "1.13390000",
+    "rate_age_days": 2
+  },
+  "explanation": "This retained source row contributes one trip and its recorded amounts to the date/zone total. A zero-distance flag does not remove its charges."
+}

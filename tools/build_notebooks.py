@@ -14,7 +14,8 @@ for source in sorted((ROOT / "notebooks/source").glob("*.py")):
             cells.append({"cell_type": "markdown", "metadata": {}, "source": content.splitlines(keepends=True)})
         elif kind == "code":
             ast.parse(content)
-            cells.append({"cell_type": "code", "metadata": {}, "source": content.splitlines(keepends=True), "execution_count": None, "outputs": []})
+            first_code = not any(cell["cell_type"] == "code" for cell in cells)
+            cells.append({"cell_type": "code", "metadata": {"tags": ["parameters"]} if first_code else {}, "source": content.splitlines(keepends=True), "execution_count": None, "outputs": []})
         else:
             raise ValueError(f"Unknown cell type {kind}")
     notebook = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}, "language_info": {"name": "python"}}, "nbformat": 4, "nbformat_minor": 5}

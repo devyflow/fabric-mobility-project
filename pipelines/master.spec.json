@@ -1,0 +1,39 @@
+{
+  "kind": "implementation specification, not a Fabric REST item definition",
+  "name": "pl_project_master",
+  "concurrency": 1,
+  "parameters": {
+    "source_month": "2025-06",
+    "start_date": "2025-06-01",
+    "end_date": "2025-06-30",
+    "fx_start_date": "2025-05-25",
+    "max_fx_age_days": 7
+  },
+  "activities": [
+    {"name":"ingest_taxi", "type":"ExecutePipeline", "item":"pl_taxi_bronze", "depends_on":[], "parameters":["source_month"]},
+    {"name":"ingest_gdp", "type":"Dataflow", "item":"df_world_bank_bronze", "depends_on":[], "output":"bronze_world_bank_pages"},
+    {"name":"ingest_fx", "type":"Dataflow", "item":"df_ecb_bronze", "depends_on":[], "output":"bronze_ecb_responses", "parameters":["fx_start_date","end_date"]},
+    {"name":"ingest_air", "type":"Dataflow", "item":"df_openaq_bronze", "depends_on":[], "output":"bronze_openaq_hourly_pages", "prerequisite":"reviewed sensor mapping and secure API credential connection"},
+    {"name":"taxi_silver", "type":"Notebook", "item":"02_taxi_silver", "depends_on":["ingest_taxi"], "parameters":["sample_month=source_month"]},
+    {"name":"economic_silver", "type":"Notebook", "item":"03_economic_silver", "depends_on":["ingest_gdp","ingest_fx"], "parameters":["gdp_run_id=master_run_id","fx_run_id=master_run_id"]},
+    {"name":"taxi_gold", "type":"Notebook", "item":"04_taxi_gold", "depends_on":["taxi_silver","economic_silver"], "parameters":["start_date","end_date","max_fx_age_days"]},
+    {"name":"air_silver_gold", "type":"Notebook", "item":"05_air_quality", "depends_on":["ingest_air"], "parameters":["run_id=master_run_id","start_date","end_date"]},
+    {"name":"publish_warehouse", "type":"Script", "item":"warehouse/04_publish_from_lakehouse.sql", "depends_on":["taxi_gold","air_silver_gold"], "retries":2, "retry_condition":"SQL endpoint synchronization/transient errors only"},
+    {"name":"verify_warehouse", "type":"Script", "item":"warehouse/02_verify_star.sql", "depends_on":["publish_warehouse"]},
+    {"name":"refresh_visuals", "type":"Notebook", "item":"06_visualizations", "depends_on":["verify_warehouse"]}
+  ],
+  "failure_policy": {
+    "stop_downstream": true,
+    "advance_checkpoint_only_on_success": true,
+    "log_fields":["run_id","source","requested_window","status","row_count","checksum","duration","error_category"],
+    "credential_errors":"fail immediately; do not retry 401/403",
+    "transient_source_errors":"up to 3 attempts; honor bounded Retry-After"
+  },
+  "scheduling": {
+    "daily_controller":"source-specific branches; avoid reprocessing unchanged taxi months",
+    "taxi":"discover new monthly publications and revisions; preserve previous source versions",
+    "air":"new observations plus a documented overlap window for late data",
+    "fx":"new published observations; preceding-rate policy applies only in Gold",
+    "gdp":"periodic revision check of annual indicator values"
+  }
+}

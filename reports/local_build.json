@@ -1,0 +1,200 @@
+{
+  "run_id": "1682542ce8ac4b8bb1b933dd7ce3940b",
+  "started_at_utc": "2026-11-21T09:49:04.418444+00:00",
+  "scope": "Local verification; Fabric execution pending",
+  "stages": [
+    {
+      "name": "verify_input_checksums",
+      "started_at_utc": "2026-11-21T09:49:04.422621+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:04.787009+00:00"
+    },
+    {
+      "name": "load_references",
+      "started_at_utc": "2026-11-21T09:49:04.879305+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:05.736083+00:00"
+    },
+    {
+      "name": "transform_taxi_silver_and_gold",
+      "started_at_utc": "2026-11-21T09:49:05.736159+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:18.119143+00:00"
+    },
+    {
+      "name": "reconcile",
+      "started_at_utc": "2026-11-21T09:49:18.119225+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:18.983152+00:00"
+    },
+    {
+      "name": "check_air_capture",
+      "started_at_utc": "2026-11-21T09:49:18.997439+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:19.000206+00:00"
+    },
+    {
+      "name": "rerun_same_inputs",
+      "started_at_utc": "2026-11-21T09:49:19.818163+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:33.971595+00:00"
+    },
+    {
+      "name": "reconcile_rerun",
+      "started_at_utc": "2026-11-21T09:49:34.770447+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:35.762586+00:00"
+    },
+    {
+      "name": "export_reporting_tables",
+      "started_at_utc": "2026-11-21T09:49:35.762667+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-21T09:49:36.008624+00:00"
+    }
+  ],
+  "duckdb_version": "2.0.1",
+  "transformation_source_sha256": {
+    "src/fabric_project/__init__.py": "53b3b2439a4778cd1e2a6fd003dead58b3e08085e9f82723a280f86ab4d91a2d",
+    "src/fabric_project/air_quality.py": "79724eaf2b7314f13ba02b0cc0d5fa3ec251ce2852841f9bbae7b3df1e504336",
+    "src/fabric_project/bronze.py": "22524a933d93fc6a19ada7905bc4cf90f5835c7b621c569b199729c000bfe915",
+    "src/fabric_project/http.py": "0345620248b40b49f0dc2f921db3822309d9daf77941803a9531726b389d1593",
+    "src/fabric_project/ingest_air.py": "3f1bade75d5bf49acfaf927b520d88a9fcba1106b9c4821b5390fa1d1f20c597",
+    "src/fabric_project/local_air.py": "77ecdbce1b38f8fc424bdcfa42736b9b8451120626d6b0d74f2f92d2b6cc47cf",
+    "src/fabric_project/local_build.py": "5628b744b7f932b3821caeaec08d60243153fffd8da799a6fbe1e6dcb08284bf",
+    "src/fabric_project/preflight.py": "7c9ff30c89a1f3e2b0783540e68f69871579240a72295e004de80b7a91882d49",
+    "src/fabric_project/quality.py": "78ead1e234df30d2672824a65b83e48794da07902dc39e0495570aa9918d614b",
+    "sql/local_gold.sql": "3b52f59b750db56f7ebd4e1464fc081f44f345008ab3d032e102d2124c5bccc3",
+    "sql/local_taxi_silver.sql": "73c24521904ff48895cf0a6a2d261abc4bfd4210b109a003414b724de6dc3e7e"
+  },
+  "inputs": [
+    {
+      "source": "taxi_zones",
+      "sha256": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
+      "bytes": 12331,
+      "path": "taxi_zones/1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed.csv",
+      "source_url": "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv",
+      "run_id": "1eb59a6ce766414ab28ef7297a42f18d",
+      "ingested_at_utc": "2026-11-16T05:08:17.809834+00:00",
+      "reused_identical_payload": true
+    },
+    {
+      "source": "nyc_taxi",
+      "sha256": "1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6",
+      "bytes": 73542954,
+      "path": "nyc_taxi/1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6.parquet",
+      "source_url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2025-06.parquet",
+      "run_id": "1eb59a6ce766414ab28ef7297a42f18d",
+      "ingested_at_utc": "2026-11-16T05:08:48.702912+00:00",
+      "reused_identical_payload": true
+    },
+    {
+      "source": "world_bank_gdp",
+      "sha256": "9ea7e44fca9f5e66fa298cc2194d3b65f786e396658fd0710d3e35e31013d707",
+      "bytes": 514,
+      "path": "world_bank_gdp/9ea7e44fca9f5e66fa298cc2194d3b65f786e396658fd0710d3e35e31013d707.json",
+      "source_url": "https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json&date=2024%3A2025&per_page=1000&page=1",
+      "run_id": "1eb59a6ce766414ab28ef7297a42f18d",
+      "ingested_at_utc": "2026-11-16T05:08:18.084282+00:00",
+      "reused_identical_payload": true
+    },
+    {
+      "source": "ecb_fx",
+      "sha256": "2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af",
+      "bytes": 5732,
+      "path": "ecb_fx/2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af.csv",
+      "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=csvdata&startPeriod=2025-05-25&endPeriod=2025-06-30",
+      "run_id": "8429f319123b4cdb920eeba3f56e7f28",
+      "ingested_at_utc": "2026-11-21T09:39:56.032833+00:00",
+      "reused_identical_payload": false
+    }
+  ],
+  "reporting_start": "2025-06-01",
+  "reporting_end": "2025-06-30",
+  "validation": {
+    "source_rows": 4322960,
+    "silver_rows": 4322960,
+    "reporting_rows": 4322940,
+    "missing_pickup_date_rows": 0,
+    "outside_reporting_window_rows": 20,
+    "zero_distance_trips_in_window": 134896,
+    "unknown_zone_trips": 0,
+    "uncovered_fx_dates": 0,
+    "checks": [
+      {
+        "name": "source_rows_equal_silver_rows",
+        "passed": true
+      },
+      {
+        "name": "daily_grain_unique",
+        "passed": true,
+        "exception_rows": 0
+      },
+      {
+        "name": "zone_keys_unique",
+        "passed": true,
+        "exception_rows": 0
+      },
+      {
+        "name": "fx_keys_unique",
+        "passed": true,
+        "exception_rows": 0
+      },
+      {
+        "name": "no_future_or_stale_rate",
+        "passed": true,
+        "exception_rows": 0
+      },
+      {
+        "name": "all_zones_resolve",
+        "passed": true,
+        "exception_rows": 0
+      },
+      {
+        "name": "all_dates_resolve",
+        "passed": true,
+        "exception_rows": 0
+      },
+      {
+        "name": "fact_taxi_daily_counts_equal_window",
+        "passed": true
+      },
+      {
+        "name": "taxi_hourly_counts_equal_window",
+        "passed": true
+      },
+      {
+        "name": "base_fare_usd_reconciles_exactly",
+        "passed": true,
+        "expected": "82040782.0300",
+        "actual": "82040782.0300"
+      },
+      {
+        "name": "total_charged_usd_reconciles_exactly",
+        "passed": true,
+        "expected": "118393342.4400",
+        "actual": "118393342.4400"
+      },
+      {
+        "name": "zero_distance_trips_retained",
+        "passed": true
+      }
+    ]
+  },
+  "openaq": {
+    "status": "blocked",
+    "reason": "No completed authenticated OpenAQ capture",
+    "tables": []
+  },
+  "same_input_rerun": "passed: sorted table fingerprints unchanged",
+  "table_fingerprints": {
+    "dim_date": "7340ffd00179f82189018f50d90759fac5582588ef090cc2d01ebadc94a3fd2f",
+    "dim_zone": "63c212d23123ea97c6651eac4999228d4b3c907e0b21cad7f77b04767512646c",
+    "dim_fx": "d7e70a9d3382fde4b2eb14b07bec85a8d3d30df757450cde4f69ad9c3e85368d",
+    "dim_gdp": "acf7119c5cdb550522a6417095e9789be6d02d432a091990c1da20bbf5acb12f",
+    "fact_taxi_daily": "00fc99f2ebdea21085530222a421d9243502025f4e08581eba487e47fde941a8",
+    "taxi_hourly": "034b4ed61c8537060b6c545a8226b1f36b8eac1ef8841c92ae3cfd549c78934e",
+    "mobility_daily": "f57b4740fe8b3f0acbcd309e08234dfc2ba55ebb91a7e69d22e12121be574586"
+  },
+  "status": "partial_success",
+  "completed_at_utc": "2026-11-21T09:49:36.008713+00:00"
+}

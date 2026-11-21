@@ -1,0 +1,39 @@
+test_exact_repeat_deduplicates_but_conflicting_values_fail (test_air_quality.AirQualityTests.test_exact_repeat_deduplicates_but_conflicting_values_fail) ... ok
+test_fall_dst_repeated_local_hour_is_two_distinct_utc_hours (test_air_quality.AirQualityTests.test_fall_dst_repeated_local_hour_is_two_distinct_utc_hours) ... ok
+test_incomplete_page_count_fails (test_air_quality.AirQualityTests.test_incomplete_page_count_fails) ... ok
+test_midnight_ending_interval_belongs_to_previous_local_day (test_air_quality.AirQualityTests.test_midnight_ending_interval_belongs_to_previous_local_day) ... ok
+test_missing_offset_and_long_interval_are_flagged (test_air_quality.AirQualityTests.test_missing_offset_and_long_interval_are_flagged) ... ok
+test_negative_and_source_flags_are_retained_but_not_reportable (test_air_quality.AirQualityTests.test_negative_and_source_flags_are_retained_but_not_reportable) ... ok
+test_changed_source_preserves_both_versions (test_core.BronzeTests.test_changed_source_preserves_both_versions) ... ok
+test_corrupt_existing_payload_fails_loudly (test_core.BronzeTests.test_corrupt_existing_payload_fails_loudly) ... ok
+test_path_traversal_rejected (test_core.BronzeTests.test_path_traversal_rejected) ... ok
+test_repeat_payload_does_not_create_second_data_file (test_core.BronzeTests.test_repeat_payload_does_not_create_second_data_file) ... ok
+test_openaq_full_page_requires_next_page (test_core.PaginationTests.test_openaq_full_page_requires_next_page) ... ok
+test_openaq_repeated_page_is_detected (test_core.PaginationTests.test_openaq_repeated_page_is_detected) ... ok
+test_transient_error_is_retried (test_core.PaginationTests.test_transient_error_is_retried) ... ok
+test_unauthorized_request_is_not_retried (test_core.PaginationTests.test_unauthorized_request_is_not_retried) ... ok
+test_world_bank_fetches_every_page (test_core.PaginationTests.test_world_bank_fetches_every_page) ... ok
+test_world_bank_partial_response_not_successful (test_core.PaginationTests.test_world_bank_partial_response_not_successful) ... ok
+test_bad_rate_rejected (test_core.QualityTests.test_bad_rate_rejected) ... ok
+test_currency_direction (test_core.QualityTests.test_currency_direction) ... ok
+test_missing_and_negative_values_are_distinct (test_core.QualityTests.test_missing_and_negative_values_are_distinct) ... ok
+test_stale_rate_is_unavailable (test_core.QualityTests.test_stale_rate_is_unavailable) ... ok
+test_unknown_rate_does_not_become_zero (test_core.QualityTests.test_unknown_rate_does_not_become_zero) ... ok
+test_weekend_uses_previous_not_future_rate (test_core.QualityTests.test_weekend_uses_previous_not_future_rate) ... ok
+test_zero_distance_is_flagged_not_deleted (test_core.QualityTests.test_zero_distance_is_flagged_not_deleted) ... ok
+test_conflicting_sensor_hour_fails_before_publication (test_local_air.LocalAirTests.test_conflicting_sensor_hour_fails_before_publication) ... ok
+test_exact_duplicates_and_negative_values_accounted_for (test_local_air.LocalAirTests.test_exact_duplicates_and_negative_values_accounted_for) ... ok
+test_missing_capture_reports_blocker_without_fake_tables (test_local_air.LocalAirTests.test_missing_capture_reports_blocker_without_fake_tables) ... ok
+test_units_stay_separate (test_local_air.LocalAirTests.test_units_stay_separate) ... ok
+test_concurrent_build_is_rejected_before_touching_outputs (test_local_build.LocalBuildTests.test_concurrent_build_is_rejected_before_touching_outputs) ... ok
+test_duplicate_rate_fails_validation_instead_of_inflating_totals (test_local_build.LocalBuildTests.test_duplicate_rate_fails_validation_instead_of_inflating_totals) ... ok
+test_failed_build_preserves_last_success_pointer_and_releases_lock (test_local_build.LocalBuildTests.test_failed_build_preserves_last_success_pointer_and_releases_lock) ... ok
+test_missing_fx_does_not_delete_or_zero_charge (test_local_build.LocalBuildTests.test_missing_fx_does_not_delete_or_zero_charge) ... ok
+test_real_sql_preserves_zero_negative_and_null_records (test_local_build.LocalBuildTests.test_real_sql_preserves_zero_negative_and_null_records) ... ok
+test_rerun_keeps_same_counts_and_values (test_local_build.LocalBuildTests.test_rerun_keeps_same_counts_and_values) ... ok
+test_sunday_uses_friday_rate_and_correct_conversion (test_local_build.LocalBuildTests.test_sunday_uses_friday_rate_and_correct_conversion) ... ok
+
+----------------------------------------------------------------------
+Ran 34 tests in 2.093s
+
+OK

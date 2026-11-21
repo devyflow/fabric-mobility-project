@@ -7,23 +7,26 @@ Work starts with executable source checks and small, explainable components. The
 ## Current implementation
 
 - A local source-verification command with original-response preservation, checksums, run manifests, explicit missing-key status, and bounded retries.
-- Seventeen automated tests for ingestion integrity, pagination, retry behavior, zero-distance handling, and currency conversion.
-- Five importable Fabric notebooks for taxi profiling, Taxi Silver, economics Silver, taxi Gold, and air quality Silver/Gold. Python syntax checked; Fabric execution is pending.
+- Thirty-four passing tests covering ingestion integrity, pagination, retry behavior, zero-distance retention, FX conversion, air-quality interval handling, real SQL aggregation, reruns, failed publication, and concurrent-build rejection.
+- Six importable Fabric notebooks for taxi profiling, Taxi Silver, economics Silver, taxi Gold, air quality Silver/Gold, and the four required analysis views. Python syntax checked; Fabric execution is pending.
 - Power Query M sources for World Bank and ECB Bronze ingestion, plus an OpenAQ pagination function awaiting a credential-backed request. Fabric destinations, parameters, and scheduled execution are pending.
-- Warehouse table definitions and checks for duplicate keys, missing references, and matched USD/EUR averages.
-- A setup guide, requirement checklist, and explanation notes for the project breakdown session.
+- Warehouse table definitions, a transactional Lakehouse-to-Warehouse publication batch, reconciliation SQL, and reporting queries. Live SQL execution is pending.
+- A pipeline activity/dependency specification, tagged notebook parameter cells, recovery policy, data dictionary, and lineage/governance documentation.
+- A verified local June build: all 4,322,960 source records retained in Silver, 4,322,940 inside June, 20 outside June explicitly accounted for, and unchanged reporting-table fingerprints on rerun.
+- Real-data charts, a self-contained HTML report, compact reporting CSVs, quality counts, and a traced source-record example for your breakdown session.
 
-The local source checks and real taxi profile ran successfully for TLC, World Bank, and ECB. OpenAQ still needs authenticated discovery and verified historical coverage. The Fabric Trial workspace option was disabled in the signed-in tenant when checked; live deployment, orchestration, visualization, and final validation remain pending. See [requirements](docs/requirements.md).
+TLC, World Bank, and ECB run locally. OpenAQ ingestion/aggregation code is implemented and tested with labelled synthetic fixtures; actual NYC observations, reviewed geography, and Dataflow credential binding remain pending. The Fabric Trial workspace option was disabled at the last check; live deployment and cloud validation remain pending. See [requirements](docs/requirements.md).
 
 ## Start here
 
-1. Read [the walkthrough](docs/walkthrough.md) to understand the data journey.
-2. Open [Fabric setup](docs/fabric_setup.md) to connect the prepared components.
-3. Review [source verification results](reports/latest_preflight.md) for actual observations rather than assumed source availability.
+1. Open [the verified local report](reports/project_report.html) for charts and reconciliation.
+2. Use [the walkthrough](docs/walkthrough.md) and [the demo script](docs/demo_script.md) to explain the actual implementation.
+3. Follow [local reproduction](docs/run_locally.md) or [Fabric setup](docs/fabric_setup.md) to run the components.
+4. Inspect [the latest build evidence](reports/local_build.json); the earlier source preflight report is retained as historical evidence.
 
 ## Run the local checks
 
-Python 3.10 or newer; the core commands use only the standard library. From this project directory in PowerShell:
+Source verification uses the standard library. The analytics build and its integration tests require the dependencies in `requirements-local.txt` (Python 3.10 or newer, subject to package wheel availability). From this project directory in PowerShell:
 
 ```powershell
 $env:PYTHONPATH = 'src'
@@ -67,6 +70,8 @@ try {
 | `docs/` | Setup, explanation, decisions, and requirement coverage |
 | `reports/` | Public-source verification evidence |
 | `warehouse/` | Fabric Warehouse definitions, source-to-table mapping, and verification SQL |
+| `sql/` | Locally executed DuckDB transformation SQL |
+| `pipelines/` | Fabric master-pipeline specification and deployment checks |
 | `data/` | Default location for future local raw downloads and manifests; excluded from Git |
 
 ## Source of truth

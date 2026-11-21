@@ -1,8 +1,8 @@
 // Preserve CSV response text in Bronze; parse and validate in the Silver notebook.
 // This query has no credentials. Use an Anonymous Web API connection.
 let
-    StartDate = "2025-06-01",
-    EndDate = "2025-06-07",
+    StartDate = "2025-05-25",
+    EndDate = "2025-06-30",
     RunId = "manual-development",
     Response = Binary.Buffer(Web.Contents("https://data-api.ecb.europa.eu", [
         RelativePath = "service/data/EXR/D.USD.EUR.SP00.A",

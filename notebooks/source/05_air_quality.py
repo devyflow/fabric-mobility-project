@@ -7,7 +7,7 @@
 # CELL code
 run_id = "set-a-successful-openaq-run-id"
 start_date = "2025-06-01"
-end_date = "2025-06-07"
+end_date = "2025-06-30"
 
 # CELL code
 from pyspark.sql import functions as F
@@ -31,6 +31,9 @@ coverage = pages.groupBy("sensor_id").agg(
     F.count("*").alias("page_count"))
 if coverage.where("first_page <> 1 OR last_page <> page_count").limit(1).count():
     raise ValueError("API pages are missing")
+terminal = pages.join(coverage.select("sensor_id", "last_page"), "sensor_id").where("page = last_page")
+if terminal.where("result_count >= 1000").limit(1).count():
+    raise ValueError("API capture lacks a terminal short page")
 
 # CELL markdown
 # ## Expand the original response and reconcile counts
@@ -66,7 +69,7 @@ clean = (dedup.join(mapping, "sensor_id", "left")
     .withColumn("report_hour", F.hour("hour_start_nyc"))
     .withColumn("is_reportable", F.coalesce(
          F.col("location_id").isNotNull() & F.col("hour_start_utc").isNotNull()
-         & (F.col("hour_end_utc") > F.col("hour_start_utc"))
+         & ((F.col("hour_end_utc").cast("long") - F.col("hour_start_utc").cast("long")) == 3600)
          & (F.length("pollutant_code") > 0) & (F.length("measurement_unit") > 0)
          & F.col("value").isNotNull() & ~F.isnan("value")
          & (F.abs(F.col("value")) != float("inf")) & (F.col("value") >= 0)

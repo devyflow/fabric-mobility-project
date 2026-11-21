@@ -6,7 +6,7 @@ import io
 import json
 import os
 import uuid
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -110,7 +110,8 @@ def main(argv=None):
         return {"rows": len(rows), "pages": len(parts), "non_null_values": sum(r.get("value") is not None for r in rows), "years": [r["date"] for r in rows]}
 
     def ecb():
-        query = urlencode({"format": "csvdata", "startPeriod": config["sample_start"], "endPeriod": config["sample_end"]})
+        fx_start = (date.fromisoformat(config["sample_start"]) - timedelta(days=7)).isoformat()
+        query = urlencode({"format": "csvdata", "startPeriod": fx_start, "endPeriod": config["sample_end"]})
         url = f"https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?{query}"
         raw = read_bytes(url, headers={"Accept": "text/csv"})
         preserve("ecb_fx", url, raw, "csv")

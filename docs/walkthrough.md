@@ -61,7 +61,7 @@ The table definitions and aggregation notebooks are written; live loading is pen
 
 ## Step 7 Interpret carefully
 
-This stage is pending. A correlation describes an association; it does not establish causation. Show coverage and the number of matched dates. National GDP is context, not a measure of New York City's GDP or proof of a taxi effect on the economy.
+The local mobility and economic charts are ready in `reports/project_report.html`. Actual air-quality comparisons remain pending sensor observations and reviewed geography. A correlation describes an association; it does not establish causation. Show coverage and the number of matched dates. National GDP is context, not a measure of New York City's GDP or proof of a taxi effect on the economy.
 
 ## Short demo sequence
 
@@ -71,4 +71,4 @@ This stage is pending. A correlation describes an association; it does not estab
 4. In Fabric, run source inspection and show actual profile counts.
 5. Run Silver transformation and compare counts.
 6. Rerun the same month and show no count inflation.
-7. Add Warehouse, report, and scheduled-run demonstrations only after they work.
+7. Show the actual local report, the real-row trace in `reports/trace_example.json`, and the same-input rerun evidence in `reports/local_build.json`. Add live Warehouse and scheduled-run demonstrations after cloud execution works.

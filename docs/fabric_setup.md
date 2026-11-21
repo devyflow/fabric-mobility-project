@@ -35,9 +35,13 @@ Follow `dataflows/README.md` to create the two prepared Dataflows and configure 
 
 Then run notebook 03 for selected Bronze GDP and FX runs, followed by notebook 04 for taxi/date/FX Gold. Request ECB data beginning at least seven days before the first reporting date if you want to apply the preceding-rate policy at the window boundary.
 
+The prepared default now covers 1–30 June 2025, with ECB requests beginning 25 May. Notebook first-code cells carry Fabric parameter tags; pass the master run ID and requested dates according to `pipelines/master.spec.json`. This specification still needs to be assembled and exported from the actual workspace.
+
 OpenAQ still needs an account/key, location/sensor discovery, and a verified method to supply the header credential securely during scheduled Dataflow refresh. Do not commit a literal key or treat a regular Power Query parameter as a secret store.
 
 Notebook 05 expects `bronze_openaq_hourly_pages` and a reviewed `ref_air_sensor` table containing `sensor_id`, `location_id`, `station_name`, `latitude`, `longitude`, and nullable `zone_id`. Obtain and confirm mapping from station metadata and official zones; never manufacture it. Notebook 05 publishes station/hour and station/day measures. Use `warehouse/README.md` for the remaining load and validation steps.
+
+After both core facts validate, publish the Warehouse with `04_publish_from_lakehouse.sql`, run the Warehouse verification queries, then run notebook 06 using an actual pollutant/unit pair from the captured data. That notebook includes mobility, currency/GDP, air-quality coverage, and paired taxi/pollution analysis. Live execution must confirm the required Fabric runtime, Lakehouse schema, and connection behavior.
 
 ## Next completion gate
 
