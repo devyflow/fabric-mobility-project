@@ -1,72 +1,89 @@
 {
-  "run_id": "1682542ce8ac4b8bb1b933dd7ce3940b",
-  "started_at_utc": "2026-11-21T09:49:04.418444+00:00",
+  "run_id": "ba1993bf99284e1ca06ab2cdb444ba6b",
+  "started_at_utc": "2026-11-22T08:40:10.992398+00:00",
   "scope": "Local verification; Fabric execution pending",
   "stages": [
     {
       "name": "verify_input_checksums",
-      "started_at_utc": "2026-11-21T09:49:04.422621+00:00",
+      "started_at_utc": "2026-11-22T08:40:10.997213+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:04.787009+00:00"
+      "completed_at_utc": "2026-11-22T08:40:11.359673+00:00"
     },
     {
       "name": "load_references",
-      "started_at_utc": "2026-11-21T09:49:04.879305+00:00",
+      "started_at_utc": "2026-11-22T08:40:11.449077+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:05.736083+00:00"
+      "completed_at_utc": "2026-11-22T08:40:12.359439+00:00"
     },
     {
       "name": "transform_taxi_silver_and_gold",
-      "started_at_utc": "2026-11-21T09:49:05.736159+00:00",
+      "started_at_utc": "2026-11-22T08:40:12.359510+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:18.119143+00:00"
+      "completed_at_utc": "2026-11-22T08:40:23.968375+00:00"
     },
     {
       "name": "reconcile",
-      "started_at_utc": "2026-11-21T09:49:18.119225+00:00",
+      "started_at_utc": "2026-11-22T08:40:23.968464+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:18.983152+00:00"
+      "completed_at_utc": "2026-11-22T08:40:24.834144+00:00"
     },
     {
       "name": "check_air_capture",
-      "started_at_utc": "2026-11-21T09:49:18.997439+00:00",
+      "started_at_utc": "2026-11-22T08:40:24.897831+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:19.000206+00:00"
+      "completed_at_utc": "2026-11-22T08:40:41.050093+00:00"
     },
     {
       "name": "rerun_same_inputs",
-      "started_at_utc": "2026-11-21T09:49:19.818163+00:00",
+      "started_at_utc": "2026-11-22T08:40:41.951088+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:33.971595+00:00"
+      "completed_at_utc": "2026-11-22T08:40:53.119428+00:00"
+    },
+    {
+      "name": "rerun_air_capture",
+      "started_at_utc": "2026-11-22T08:40:53.119572+00:00",
+      "status": "passed",
+      "completed_at_utc": "2026-11-22T08:41:18.183385+00:00"
     },
     {
       "name": "reconcile_rerun",
-      "started_at_utc": "2026-11-21T09:49:34.770447+00:00",
+      "started_at_utc": "2026-11-22T08:41:18.990644+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:35.762586+00:00"
+      "completed_at_utc": "2026-11-22T08:41:19.725869+00:00"
     },
     {
       "name": "export_reporting_tables",
-      "started_at_utc": "2026-11-21T09:49:35.762667+00:00",
+      "started_at_utc": "2026-11-22T08:41:19.725940+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-21T09:49:36.008624+00:00"
+      "completed_at_utc": "2026-11-22T08:41:20.022727+00:00"
     }
   ],
   "duckdb_version": "2.0.1",
   "transformation_source_sha256": {
     "src/fabric_project/__init__.py": "53b3b2439a4778cd1e2a6fd003dead58b3e08085e9f82723a280f86ab4d91a2d",
-    "src/fabric_project/air_quality.py": "79724eaf2b7314f13ba02b0cc0d5fa3ec251ce2852841f9bbae7b3df1e504336",
-    "src/fabric_project/bronze.py": "22524a933d93fc6a19ada7905bc4cf90f5835c7b621c569b199729c000bfe915",
+    "src/fabric_project/air_quality.py": "0a4ae9e2245b3e992c182708d15d339ed9fff1db055c91e7b247bf90c109b32a",
+    "src/fabric_project/bronze.py": "fc74c9cb70f3b8fe17f8ae9961f3f82b1d227b9677b15815e207325e84448602",
     "src/fabric_project/http.py": "0345620248b40b49f0dc2f921db3822309d9daf77941803a9531726b389d1593",
     "src/fabric_project/ingest_air.py": "3f1bade75d5bf49acfaf927b520d88a9fcba1106b9c4821b5390fa1d1f20c597",
-    "src/fabric_project/local_air.py": "77ecdbce1b38f8fc424bdcfa42736b9b8451120626d6b0d74f2f92d2b6cc47cf",
-    "src/fabric_project/local_build.py": "5628b744b7f932b3821caeaec08d60243153fffd8da799a6fbe1e6dcb08284bf",
-    "src/fabric_project/preflight.py": "7c9ff30c89a1f3e2b0783540e68f69871579240a72295e004de80b7a91882d49",
+    "src/fabric_project/local_air.py": "560320c25e07ab451343855bf9fcf97a95cc112592f9aa1290a6c8d7e5de1601",
+    "src/fabric_project/local_build.py": "c1f201f8c89bce80808a041d72ff7940866f89fab85d13357c4be579b79823e2",
+    "src/fabric_project/openaq_archive.py": "0cda4ed7fe1d1944c88b70fb128d57dafa8abd8c0f44b74ade31e0677e8b4a10",
+    "src/fabric_project/preflight.py": "e6954f03005355a16286d740b098216bb90d192251eee068fbf28856e8d2af03",
     "src/fabric_project/quality.py": "78ead1e234df30d2672824a65b83e48794da07902dc39e0495570aa9918d614b",
     "sql/local_gold.sql": "3b52f59b750db56f7ebd4e1464fc081f44f345008ab3d032e102d2124c5bccc3",
     "sql/local_taxi_silver.sql": "73c24521904ff48895cf0a6a2d261abc4bfd4210b109a003414b724de6dc3e7e"
   },
   "inputs": [
+    {
+      "source": "ecb_fx",
+      "sha256": "2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af",
+      "bytes": 5732,
+      "path": "ecb_fx/2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af.csv",
+      "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=csvdata&startPeriod=2025-05-25&endPeriod=2025-06-30",
+      "run_id": "8429f319123b4cdb920eeba3f56e7f28",
+      "ingested_at_utc": "2026-11-21T09:39:56.032833+00:00",
+      "reused_identical_payload": false
+    },
     {
       "source": "taxi_zones",
       "sha256": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
@@ -96,16 +113,6 @@
       "run_id": "1eb59a6ce766414ab28ef7297a42f18d",
       "ingested_at_utc": "2026-11-16T05:08:18.084282+00:00",
       "reused_identical_payload": true
-    },
-    {
-      "source": "ecb_fx",
-      "sha256": "2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af",
-      "bytes": 5732,
-      "path": "ecb_fx/2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af.csv",
-      "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=csvdata&startPeriod=2025-05-25&endPeriod=2025-06-30",
-      "run_id": "8429f319123b4cdb920eeba3f56e7f28",
-      "ingested_at_utc": "2026-11-21T09:39:56.032833+00:00",
-      "reused_identical_payload": false
     }
   ],
   "reporting_start": "2025-06-01",
@@ -181,9 +188,106 @@
     ]
   },
   "openaq": {
-    "status": "blocked",
-    "reason": "No completed authenticated OpenAQ capture",
-    "tables": []
+    "status": "passed",
+    "source_rows": 3610,
+    "exact_duplicate_rows": 0,
+    "silver_rows": 3610,
+    "non_reportable_rows": 29,
+    "daily_rows": 150,
+    "run_id": "e18a01729039475194fe595f57e20920",
+    "source_mode": "public_archive",
+    "original_files": 93,
+    "stations": [
+      {
+        "location_id": 384,
+        "station_name": "CCNY",
+        "latitude": 40.8197,
+        "longitude": -73.9481,
+        "source_metadata": "https://explore.openaq.org/locations/384",
+        "provider": "AirNow",
+        "license": "US Public Domain",
+        "frequency_minutes": 60,
+        "zone_id": 152,
+        "zone_name": "Manhattanville",
+        "borough": "Manhattan",
+        "geography_review": "verified_nyc",
+        "geography_evidence": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+        "is_mobile": false
+      },
+      {
+        "location_id": 625,
+        "station_name": "Manhattan/IS143",
+        "latitude": 40.8492,
+        "longitude": -73.9319,
+        "source_metadata": "https://explore.openaq.org/locations/625",
+        "provider": "AirNow",
+        "license": "US Public Domain",
+        "frequency_minutes": 60,
+        "zone_id": 243,
+        "zone_name": "Washington Heights North",
+        "borough": "Manhattan",
+        "geography_review": "verified_nyc",
+        "geography_evidence": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+        "is_mobile": false
+      },
+      {
+        "location_id": 631,
+        "station_name": "Queens",
+        "latitude": 40.7375,
+        "longitude": -73.8244,
+        "source_metadata": "https://explore.openaq.org/locations/631",
+        "provider": "AirNow",
+        "license": "US Public Domain",
+        "frequency_minutes": 60,
+        "zone_id": 135,
+        "zone_name": "Kew Gardens Hills",
+        "borough": "Queens",
+        "geography_review": "verified_nyc",
+        "geography_evidence": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+        "is_mobile": false
+      }
+    ],
+    "boundaries": {
+      "source": "taxi_zone_boundaries",
+      "sha256": "8e7c20c6abc39723aa6d69fc6ece21d446edb5c5886a11e67263fb50bd970ad1",
+      "bytes": 3886051,
+      "path": "taxi_zone_boundaries/8e7c20c6abc39723aa6d69fc6ece21d446edb5c5886a11e67263fb50bd970ad1.geojson",
+      "source_url": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+      "run_id": "e18a01729039475194fe595f57e20920",
+      "ingested_at_utc": "2026-11-22T08:29:44.908214+00:00",
+      "reused_identical_payload": false
+    },
+    "archive_coverage": {
+      "384": {
+        "zone_id": 152,
+        "zone_name": "Manhattanville",
+        "dates_with_object": 31,
+        "missing_object_dates": []
+      },
+      "625": {
+        "zone_id": 243,
+        "zone_name": "Washington Heights North",
+        "dates_with_object": 31,
+        "missing_object_dates": []
+      },
+      "631": {
+        "zone_id": 135,
+        "zone_name": "Kew Gardens Hills",
+        "dates_with_object": 31,
+        "missing_object_dates": []
+      }
+    },
+    "min_hours_for_pair": 18,
+    "matched_days_by_series": 148,
+    "series_count": 5,
+    "no_source_flag_count": 3610,
+    "tables": [
+      "dim_air_location",
+      "air_hourly",
+      "fact_air_quality_daily",
+      "matched_air_taxi",
+      "air_taxi_correlation"
+    ]
   },
   "same_input_rerun": "passed: sorted table fingerprints unchanged",
   "table_fingerprints": {
@@ -193,8 +297,13 @@
     "dim_gdp": "acf7119c5cdb550522a6417095e9789be6d02d432a091990c1da20bbf5acb12f",
     "fact_taxi_daily": "00fc99f2ebdea21085530222a421d9243502025f4e08581eba487e47fde941a8",
     "taxi_hourly": "034b4ed61c8537060b6c545a8226b1f36b8eac1ef8841c92ae3cfd549c78934e",
-    "mobility_daily": "f57b4740fe8b3f0acbcd309e08234dfc2ba55ebb91a7e69d22e12121be574586"
+    "mobility_daily": "f57b4740fe8b3f0acbcd309e08234dfc2ba55ebb91a7e69d22e12121be574586",
+    "dim_air_location": "215297f25fb112c58601b8d68ff2645ff7ad26e236e64fd7fc38b0ad50a3ff60",
+    "air_hourly": "eaa235d04d29dc39927d050c82514abec4ad3c9ac0d410a8964f75c841daedc0",
+    "fact_air_quality_daily": "e48f7923b9eac1faeb354ca8425a204eeed4a1b33f0d1f17502c5072e9d8c8e6",
+    "matched_air_taxi": "5a990a813d41565b7bb66f125510cb9d6d95fdac67aa80031ca641d3b019344e",
+    "air_taxi_correlation": "279bec251d46db5ae23ab24cb5d92d3c89205f80ad7d6957a8779bfa017da9b7"
   },
-  "status": "partial_success",
-  "completed_at_utc": "2026-11-21T09:49:36.008713+00:00"
+  "status": "passed_locally",
+  "completed_at_utc": "2026-11-22T08:41:20.022793+00:00"
 }

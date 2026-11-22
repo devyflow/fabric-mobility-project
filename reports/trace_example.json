@@ -39,5 +39,26 @@
     "usd_per_eur": "1.13390000",
     "rate_age_days": 2
   },
-  "explanation": "This retained source row contributes one trip and its recorded amounts to the date/zone total. A zero-distance flag does not remove its charges."
+  "explanation": "This retained source row contributes one trip and its recorded amounts to the date/zone total. A zero-distance flag does not remove its charges.",
+  "air_taxi_pair": {
+    "report_date": "2025-06-01",
+    "pickup_zone_id": 152,
+    "trip_count": 188,
+    "pollutant_code": "pm25",
+    "measurement_unit": "\u00b5g/m\u00b3",
+    "concentration": 3.404166666666667,
+    "station_count": 1,
+    "min_observed_hours": 24,
+    "zone_name": "Manhattanville"
+  },
+  "air_station_day": {
+    "report_date": "2025-06-01",
+    "location_id": 384,
+    "pollutant_code": "pm25",
+    "measurement_unit": "\u00b5g/m\u00b3",
+    "observed_hour_count": 24,
+    "concentration_sum": 81.7,
+    "concentration_mean": 3.404166666666667,
+    "station_name": "CCNY"
+  }
 }

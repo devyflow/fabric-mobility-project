@@ -25,7 +25,7 @@ flowchart TD
     WH --> Viz[Mobility air quality correlation and economics views]
 ```
 
-This diagram describes the required Fabric deployment. Local verification currently substitutes a local database for execution evidence, while keeping the intended source-to-report transformations explicit. `reports/local_build.json` records the executed local stages and checksums.
+This diagram describes the Fabric deployment. The local implementation uses the public OpenAQ gzip archive and DuckDB. Station coordinates are matched to official NYC Taxi Zone polygons. The June 2025 and June 2024 run evidence records which stages executed and which inputs they used. [OpenAQ archive](https://docs.openaq.org/aws/about), [NYC Taxi Zones](https://data.cityofnewyork.us/Transportation/NYC-Taxi-Zones/8meu-9t5y/data_preview).
 
 ## Ownership and access
 
@@ -43,11 +43,11 @@ Raw and Silver retention must cover the assessment/reproduction period. A final 
 
 Zero distance, zero fare, negative fare, missing values, and invalid timestamps are distinct conditions. Retain source fields and explicit flags. Reporting exclusions require reason counts that reconcile with Silver. An unusual value is not sufficient evidence that a record is invalid.
 
-OpenAQ records are eligible for the daily mean only when the declared hourly interval, location mapping, pollutant/unit, finite nonnegative value, and upstream status support it. Exact duplicate observations are counted and traceable in Bronze. Conflicting observations for one sensor/hour fail visibly. The station/hour aggregation weights eligible sensors equally; the station/day mean weights observed hours equally. Missing hours are not zeros. Compare observations in the same pollutant/unit and show coverage.
+OpenAQ records require a valid hourly interval, location mapping, pollutant and unit, and a finite, nonnegative value. The authenticated feed also requires explicit upstream flag status. The archive omits that field, so local provenance records unknown upstream flag status. Exact duplicates are counted and traceable in Bronze. A conflict for one sensor and hour stops the run. A station hour weights eligible sensors equally. A station day weights eligible hours equally. The analysis keeps pollutant/unit combinations separate and needs 18 observed hours per station-day to pair with taxi records.
 
 The UTC interval is retained to distinguish repeated local hours during daylight-saving transitions. Taxi source times without offsets retain their wall-clock meaning; precise elapsed duration around DST requires additional provenance and is disclosed as a limitation.
 
-Taxi counts are a proxy for recorded Yellow Taxi activity, not a measurement of all road traffic. A monitor represents its measured location, not uniform conditions across a borough or city. One month cannot answer seasonal or multi-year questions, and two annual GDP values alone do not support reliable macroeconomic correlation.
+Taxi counts represent recorded Yellow Taxi pickups. A monitor represents conditions at its location. The two June windows support a same-month comparison for the monitored sites. Seasonal or macroeconomic analysis requires more data.
 
 EUR conversion divides USD by the USD-per-EUR rate and uses only an available preceding reference rate no more than seven days old. Retain source rate date and age. GDP is national annual nominal GDP; do not sum it across daily rows or claim it is NYC GDP.
 

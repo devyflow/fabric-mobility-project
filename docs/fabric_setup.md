@@ -37,9 +37,9 @@ Then run notebook 03 for selected Bronze GDP and FX runs, followed by notebook 0
 
 The prepared default now covers 1–30 June 2025, with ECB requests beginning 25 May. Notebook first-code cells carry Fabric parameter tags; pass the master run ID and requested dates according to `pipelines/master.spec.json`. This specification still needs to be assembled and exported from the actual workspace.
 
-OpenAQ still needs an account/key, location/sensor discovery, and a verified method to supply the header credential securely during scheduled Dataflow refresh. Do not commit a literal key or treat a regular Power Query parameter as a secret store.
+The public archive supplied real historical observations locally. `config/air_stations.json` now contains five sensor IDs from that archive and verified zone mapping for three fixed stations. Test those selections and the requested intervals through the live OpenAQ API before deploying them. The required Dataflow still needs an API key, secure header binding and a verified refresh. Keep the key in a secure connection.
 
-Notebook 05 expects `bronze_openaq_hourly_pages` and a reviewed `ref_air_sensor` table containing `sensor_id`, `location_id`, `station_name`, `latitude`, `longitude`, and nullable `zone_id`. Obtain and confirm mapping from station metadata and official zones; never manufacture it. Notebook 05 publishes station/hour and station/day measures. Use `warehouse/README.md` for the remaining load and validation steps.
+Notebook 05 expects `bronze_openaq_hourly_pages` and a `ref_air_sensor` table containing `sensor_id`, `location_id`, `station_name`, `latitude`, `longitude`, and nullable `zone_id`. Expand the reviewed station JSON to one row per sensor when creating the table. Notebook 05 publishes station/hour and station/day measures. Use `warehouse/README.md` for the remaining load and validation steps.
 
 After both core facts validate, publish the Warehouse with `04_publish_from_lakehouse.sql`, run the Warehouse verification queries, then run notebook 06 using an actual pollutant/unit pair from the captured data. That notebook includes mobility, currency/GDP, air-quality coverage, and paired taxi/pollution analysis. Live execution must confirm the required Fabric runtime, Lakehouse schema, and connection behavior.
 

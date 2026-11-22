@@ -1,3 +1,4 @@
 # Local verification/reporting only. Fabric supplies its own Spark runtime.
 duckdb==2.0.1
 matplotlib==3.11.2
+tzdata==2026.6

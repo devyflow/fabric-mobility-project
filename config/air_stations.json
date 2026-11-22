@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "location_id": 384,
+    "station_name": "CCNY",
+    "sensor_ids": [671, 673],
+    "latitude": 40.8197,
+    "longitude": -73.9481,
+    "is_mobile": false,
+    "zone_id": 152,
+    "geography_review": "verified_nyc",
+    "geography_evidence": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+    "source_metadata": "https://explore.openaq.org/locations/384"
+  },
+  {
+    "location_id": 625,
+    "station_name": "Manhattan/IS143",
+    "sensor_ids": [1097],
+    "latitude": 40.8492,
+    "longitude": -73.9319,
+    "is_mobile": false,
+    "zone_id": 243,
+    "geography_review": "verified_nyc",
+    "geography_evidence": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+    "source_metadata": "https://explore.openaq.org/locations/625"
+  },
+  {
+    "location_id": 631,
+    "station_name": "Queens",
+    "sensor_ids": [1106, 1152],
+    "latitude": 40.7375,
+    "longitude": -73.8244,
+    "is_mobile": false,
+    "zone_id": 135,
+    "geography_review": "verified_nyc",
+    "geography_evidence": "https://data.cityofnewyork.us/resource/8meu-9t5y.geojson?$limit=500",
+    "source_metadata": "https://explore.openaq.org/locations/631"
+  }
+]

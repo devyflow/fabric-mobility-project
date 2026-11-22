@@ -16,6 +16,7 @@ ORDER BY f.report_date, f.location_id, f.pollutant_code, f.measurement_unit;
 -- Matched date/zone observations: only compare locations with a zone mapping.
 -- Each station-day receives equal weight within a zone. The observed station
 -- and hour counts let a report show gaps explicitly. No missing data imputation.
+DECLARE @minimum_observed_hours int = 18;
 WITH pollution_by_zone AS (
     SELECT f.report_date, l.zone_id, f.pollutant_code, f.measurement_unit,
            AVG(f.concentration_mean) AS avg_station_concentration,
@@ -23,6 +24,7 @@ WITH pollution_by_zone AS (
            SUM(CAST(f.observed_hour_count AS bigint)) AS station_hours
     FROM dbo.FactAirQualityDaily f JOIN dbo.DimAirLocation l ON l.location_id = f.location_id
     WHERE l.zone_id IS NOT NULL AND l.zone_id <> -1
+      AND f.observed_hour_count >= @minimum_observed_hours
     GROUP BY f.report_date, l.zone_id, f.pollutant_code, f.measurement_unit
 )
 SELECT t.report_date, t.pickup_zone_id, p.pollutant_code, p.measurement_unit,

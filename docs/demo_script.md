@@ -6,13 +6,13 @@ This walkthrough takes about seven minutes. Explain the actual local build first
 
 "My project combines taxi activity, air quality and economic context. The required target is Microsoft Fabric, with Bronze, Silver and Gold layers, a Warehouse star schema, and automated refresh. While capacity access is being resolved, I built and tested the source processing and reporting locally."
 
-Show `docs/requirements.md` and identify the pending cloud and OpenAQ evidence.
+Show `docs/requirements.md` and identify the pending Fabric deployment and authenticated Dataflow evidence.
 
 ## Show original evidence
 
 "I downloaded the official June 2025 Yellow Taxi Parquet file. I retained the exact file, source URL, retrieval time and SHA-256 checksum. A revised source gets a new content version instead of silently replacing the evidence."
 
-Open `reports/local_build.json` and point to the source checksum and input request parameters. Show that World Bank is annual JSON, ECB is daily CSV, and TLC is monthly Parquet. Different formats and frequencies explain the need for standardization.
+Open `reports/local_build.json` and point to the source checksum and input request parameters. Show World Bank annual JSON, ECB daily CSV, TLC monthly Parquet and the OpenAQ archive's dated gzip files. Different formats and frequencies explain the need for standardization.
 
 ## Follow one real row
 
@@ -40,7 +40,13 @@ Open `reports/project_report.html`. Show daily trips, busiest pickup zones, pick
 
 "The ECB rate is USD per EUR, so EUR equals USD divided by the rate. Weekends use a preceding published rate, with a seven-day freshness limit. I record the source rate date, and all 30 June reporting dates are covered. The USD and EUR comparison uses the same eligible charge records."
 
-Question: Does GDP prove taxi activity drives growth? Answer: no. It is annual national context, and one month of taxi data cannot establish a long-term relationship.
+If asked whether taxi activity drives GDP, explain that GDP gives annual national context. The taxi sample covers two month snapshots.
+
+## Show the actual air match
+
+"On June 1, the CCNY monitor in Manhattanville had 24 PM2.5 observations with a daily mean of 3.4042 micrograms per cubic meter. The daily taxi table reported 188 pickups in zone 152 on the same date. They form one point in the scatterplot. I used the official taxi-zone boundaries and required at least 18 observed hours per station-day to admit it to the join."
+
+Find `air_station_day` and `air_taxi_pair` in `reports/trace_example.json`. In the report show the coverage chart and one matched series. Explain that Pearson r summarizes a linear association in the available pairs. June 2024 is a same-month comparison.
 
 ## Explain reliability and next evidence
 
@@ -48,7 +54,7 @@ Question: Does GDP prove taxi activity drives growth? Answer: no. It is annual n
 
 Show `same_input_rerun` and the stage log in `reports/local_build.json`. Show the test result in `reports/test_results.txt`.
 
-"The OpenAQ processing and date rules are written and tested with explicitly labelled fixtures. Real environmental findings require authenticated NYC sensor observations and reviewed geography. The Fabric notebooks, Dataflow sources, Warehouse publication batch and pipeline specification still need cloud deployment and execution evidence."
+"I used real OpenAQ observations from its public archive to complete the local report. I prepared the six Fabric notebooks, the Dataflow queries, the Warehouse SQL, and the pipeline specification while resolving workspace access. Fabric deployment, authenticated refresh and scheduled execution are pending."
 
 ## Questions to rehearse
 

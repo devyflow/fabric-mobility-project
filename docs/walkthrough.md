@@ -1,6 +1,6 @@
 # Explain the project step by step
 
-Use actual observations when presenting. The sections below describe the intended architecture and the first implemented increment. Do not describe pending cloud components as deployed.
+Use [the full lesson](learn_project.md) to study how the completed local runs work. The diagram here shows the Fabric deployment path.
 
 ## Opening
 
@@ -27,7 +27,7 @@ This is the target architecture, not a claim of current deployment. Consult requ
 
 "Taxi files describe recorded trips. OpenAQ describes sensor measurements. GDP supplies annual national context. ECB supplies daily published currency rates. They have different dates, locations, units, and refresh frequencies, so I cannot simply join all raw rows."
 
-Show `config/project.json`. Explain that the sample dates are adjustable and have not yet been validated against OpenAQ coverage. The system must not invent observations for missing sensors or dates.
+Show `config/project.json` and the reviewed stations in `config/air_stations.json`. The two local runs verify June 2025 and June 2024 measurements for those stations.
 
 ## Step 2 Bronze and evidence
 
@@ -61,7 +61,7 @@ The table definitions and aggregation notebooks are written; live loading is pen
 
 ## Step 7 Interpret carefully
 
-The local mobility and economic charts are ready in `reports/project_report.html`. Actual air-quality comparisons remain pending sensor observations and reviewed geography. A correlation describes an association; it does not establish causation. Show coverage and the number of matched dates. National GDP is context, not a measure of New York City's GDP or proof of a taxi effect on the economy.
+The [local report](../reports/project_report.html) shows mobility, economic context, air quality and paired observations. Explain coverage and the number of matched dates. Describe the association with a zone, pollutant and period. GDP is national annual context.
 
 ## Short demo sequence
 

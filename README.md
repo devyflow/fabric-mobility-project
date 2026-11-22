@@ -2,47 +2,41 @@
 
 This project combines NYC taxi trips, OpenAQ air quality, World Bank GDP, and ECB exchange rates in Microsoft Fabric. The build follows the supplied course DOCX and the instructor's clarifications about Git, extensibility, and preserving unusual data.
 
-Work starts with executable source checks and small, explainable components. There is no calendar-based build schedule. Each component must pass its completion check before we rely on it.
+The local demonstration uses June 2025 and June 2024. Each month includes observed taxi, air-quality and exchange-rate data, with annual GDP for context.
 
 ## Current implementation
 
 - A local source-verification command with original-response preservation, checksums, run manifests, explicit missing-key status, and bounded retries.
-- Thirty-four passing tests covering ingestion integrity, pagination, retry behavior, zero-distance retention, FX conversion, air-quality interval handling, real SQL aggregation, reruns, failed publication, and concurrent-build rejection.
+- Thirty-seven passing tests cover ingestion integrity, pagination, geography, air coverage and interval handling, zero-distance retention, FX conversion, SQL aggregation, reruns, failed publication, and concurrent-build rejection.
 - Six importable Fabric notebooks for taxi profiling, Taxi Silver, economics Silver, taxi Gold, air quality Silver/Gold, and the four required analysis views. Python syntax checked; Fabric execution is pending.
 - Power Query M sources for World Bank and ECB Bronze ingestion, plus an OpenAQ pagination function awaiting a credential-backed request. Fabric destinations, parameters, and scheduled execution are pending.
 - Warehouse table definitions, a transactional Lakehouse-to-Warehouse publication batch, reconciliation SQL, and reporting queries. Live SQL execution is pending.
 - A pipeline activity/dependency specification, tagged notebook parameter cells, recovery policy, data dictionary, and lineage/governance documentation.
-- A verified local June build: all 4,322,960 source records retained in Silver, 4,322,940 inside June, 20 outside June explicitly accounted for, and unchanged reporting-table fingerprints on rerun.
-- Real-data charts, a self-contained HTML report, compact reporting CSVs, quality counts, and a traced source-record example for your breakdown session.
+- Two verified local builds with unchanged reporting-table fingerprints on rerun. The June 2025 build retained all 4,322,960 source taxi records in Silver and reported 4,322,940 in-window trips.
+- Real OpenAQ PM2.5 and ozone data from three reviewed NYC stations. The local June 2025 correlation analysis produced 148 date, zone and pollutant pairs.
+- A self-contained report, compact reporting CSVs, quality counts, and two traced examples for the project breakdown session.
 
-TLC, World Bank, and ECB run locally. OpenAQ ingestion/aggregation code is implemented and tested with labelled synthetic fixtures; actual NYC observations, reviewed geography, and Dataflow credential binding remain pending. The Fabric Trial workspace option was disabled at the last check; live deployment and cloud validation remain pending. See [requirements](docs/requirements.md).
+All four data domains ran locally. OpenAQ used the [public data archive](https://docs.openaq.org/aws/about). The Fabric Trial workspace option was disabled at the last check. Live deployment, the authenticated OpenAQ Dataflow, and cloud validation remain pending. See [requirement coverage](docs/requirements.md).
 
 ## Start here
 
 1. Open [the verified local report](reports/project_report.html) for charts and reconciliation.
-2. Use [the walkthrough](docs/walkthrough.md) and [the demo script](docs/demo_script.md) to explain the actual implementation.
+2. Learn the implementation in [the step-by-step lesson](docs/learn_project.md), then rehearse with [the demo script](docs/demo_script.md).
 3. Follow [local reproduction](docs/run_locally.md) or [Fabric setup](docs/fabric_setup.md) to run the components.
-4. Inspect [the latest build evidence](reports/local_build.json); the earlier source preflight report is retained as historical evidence.
+4. Inspect [the June 2025 build evidence](reports/local_build.json) and [the June 2024 comparison evidence](reports/comparison_build.json). The earlier source preflight report records a prior API access check.
 
 ## Run the local checks
 
-Source verification uses the standard library. The analytics build and its integration tests require the dependencies in `requirements-local.txt` (Python 3.10 or newer, subject to package wheel availability). From this project directory in PowerShell:
+For the analytics build and tests, install the versions in `requirements-local.txt`. From this project directory in PowerShell, use the same Python to install and run them.
 
 ```powershell
+python -m pip install -r requirements-local.txt
+python tools/run_local_demo.py
 $env:PYTHONPATH = 'src'
 python -m unittest discover -s tests -v
-python -m fabric_project.preflight
 ```
 
-For the complete sample-month taxi download (can be tens of megabytes):
-
-```powershell
-python -m fabric_project.preflight --download-taxi
-```
-
-Exit codes: `0` all requested checks passed, `1` at least one failed, `2` a required source is blocked. A missing OpenAQ key is not success. Even a successful location discovery is not proof of historical sensor coverage.
-
-To discover OpenAQ locations, supply `OPENAQ_API_KEY` through the process environment without pasting it into chat, committing it, or typing it as a literal into shell history. For example, enter it through a masked PowerShell prompt:
+The local demo downloads the public archive without an API key. To verify the separate authenticated OpenAQ path, provide `OPENAQ_API_KEY` through a masked PowerShell prompt.
 
 ```powershell
 $openaqSecret = Read-Host 'OpenAQ API key' -AsSecureString

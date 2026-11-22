@@ -64,6 +64,13 @@ class LocalAirTests(unittest.TestCase):
         build_air(self.con,self.cache)
         self.assertEqual(self.con.execute("SELECT count(*) FROM fact_air_quality_daily").fetchone()[0],2)
 
+    def test_low_coverage_stays_in_air_fact_but_does_not_pair(self):
+        self.prepare([fixture("2025-06-01T04:00:00Z", "2025-06-01T05:00:00Z")])
+        result = build_air(self.con, self.cache, min_hours=18)
+        self.assertEqual(result["daily_rows"], 1)
+        self.assertEqual(result["matched_days_by_series"], 0)
+        self.assertEqual(self.con.execute("SELECT observed_hour_count FROM fact_air_quality_daily").fetchone(), (1,))
+
     def test_conflicting_sensor_hour_fails_before_publication(self):
         a = fixture("2025-06-01T04:00:00Z","2025-06-01T05:00:00Z")
         b = fixture("2025-06-01T04:00:00Z","2025-06-01T05:00:00Z")

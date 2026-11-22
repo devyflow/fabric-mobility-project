@@ -4,30 +4,36 @@ The local runner proves data processing and reporting rules while Fabric access 
 
 ## Reproduce the local build
 
-Use a Python virtual environment and install `requirements-local.txt`. Set `PYTHONPATH` to `src`. Run source verification first, then the build. Replace example paths with your scratch directories.
+Create a Python virtual environment and install the local dependencies. From the project root in PowerShell, run:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements-local.txt
+.\.venv\Scripts\python tools/run_local_demo.py
 $env:PYTHONPATH = 'src'
-.\.venv\Scripts\python -m fabric_project.preflight --download-taxi
-.\.venv\Scripts\python -m fabric_project.local_build --cache data/bronze --workspace data/local-build --refresh-fx --prove-rerun
-.\.venv\Scripts\python tools/render_local_report.py --workspace data/local-build
 .\.venv\Scripts\python -m unittest discover -s tests -v
 ```
 
-The source checker exits with code 2 when OpenAQ is unconfigured. Review its per-source results: it may still have downloaded the three public sources successfully. A failed public source check must be resolved before running the build. `--refresh-fx` requests the reporting window plus seven preceding days to cover the first weekend.
+The runner fetches the four public data domains and taxi-zone reference data for June 2025 and June 2024. For each month it uses the source checker, captures the OpenAQ archive, builds and reconciles the tables, and proves a same-input rerun. It renders the report after both months pass. Each period uses its own cache and workspace under `data/demo/`. Git ignores that directory. Plan for the taxi downloads and scratch databases to use disk space.
 
-During this session, large raw and working files were stored at `../../work/fabric-source-cache/bronze` and `../../work/local-analytics`, outside the user-facing output folder. The evidence and compact reporting outputs are in `reports/`. Future source checks use `data/bronze` by default; this path is excluded from Git.
+For a repeat run with the same downloaded inputs, use `--reuse-captures`. To reuse the caches already on this machine, run from the project root:
 
-The local runner selects one content version per source using manifest order, validates its checksum, and fails for unsupported multi-page GDP captures. Use a bounded GDP date range. The current runner validates one taxi source-month snapshot; do not claim it covers multiple years. Extend source selection to an explicit per-month manifest list before a historical multi-month run.
+```powershell
+.\.venv\Scripts\python tools/run_local_demo.py --reuse-captures `
+  --primary-cache ../../work/fabric-source-cache/bronze `
+  --comparison-cache ../../work/june-2024-inputs
+```
 
-## Add actual OpenAQ data
+Each build selects one content version per source from its Bronze manifests and verifies the checksums. It keeps each run-specific database and exports in scratch storage. The HTML, graphs, presentation trace and main evidence appear in `reports/`. The 2024 evidence has its own file. For a continuous multi-month analysis, build a version-selection plan for each requested taxi month before combining the Gold facts.
+
+## Try the separate authenticated OpenAQ path
 
 Enter the API key through the masked prompt described in the README; do not paste it into chat, source files, or a committed parameter.
 
+Use a separate cache for this path so the local demonstration keeps its archive capture. The initial discovery is optional when reusing the five known sensor IDs in `config/air_stations.json`. Confirm coverage and source flag behavior with the live API. For new monitors, use discovery first and review the outputs.
+
 ```powershell
-python -m fabric_project.ingest_air --cache data/bronze --discover
+python -m fabric_project.ingest_air --cache data/api-bronze --discover
 ```
 
 Review `reports/air_station_candidates.csv` against station coordinates, fixed/mobile status, pollutant/unit, history availability, and official NYC boundaries. The discovery bounding box includes nearby areas, so discovery alone is not NYC verification. Create a reviewed mapping in `config/air_stations.json` as an array of records with these fields:
@@ -46,14 +52,14 @@ Review `reports/air_station_candidates.csv` against station coordinates, fixed/m
 Do not enter invented example IDs. Then ingest and rerun:
 
 ```powershell
-python -m fabric_project.ingest_air --cache data/bronze --from-utc 2025-06-01T04:00:00Z --to-utc 2025-07-01T04:00:00Z
-python -m fabric_project.local_build --cache data/bronze --workspace data/local-build --prove-rerun
-python tools/render_local_report.py --workspace data/local-build
+python -m fabric_project.preflight --month 2025-06 --cache data/api-bronze --report-dir data/api-preflight --download-taxi --skip-openaq-api
+python -m fabric_project.ingest_air --cache data/api-bronze --from-utc 2025-06-01T04:00:00Z --to-utc 2025-07-01T04:00:00Z
+python -m fabric_project.local_build --cache data/api-bronze --workspace data/api-build --report data/api-evidence.json --prove-rerun --require-air
 ```
 
 Ingestion windows must be timezone-aware and at most 32 days. June's UTC endpoints reflect New York daylight saving time. API boundary overlaps are resolved by UTC interval start; reporting date selection stays explicit. Captures with zero usable readings fail instead of producing an apparently complete environmental report.
 
-The authenticated local capture verifies data availability and transformations. It does not replace the required Dataflow Gen2. That Dataflow still needs a secure header-credential mechanism and a tested scheduled refresh.
+The authenticated capture can verify API availability and transformations. The assignment's Fabric Dataflow Gen2 still needs a secure header connection and a successful refresh.
 
 ## Recovery and reruns
 
@@ -69,4 +75,4 @@ All 4,322,960 source records survived local Silver processing. Of these, 4,322,9
 
 The local reporting window contains $82,040,782.03 in recorded base fares and $118,393,342.44 in recorded total charges. Negative entries are retained. These values are source-record totals, not audited business revenue. All 30 reporting dates have an eligible preceding published FX rate. Refer to `reports/local_build.json` for exact reconciliation and source hashes.
 
-One month supports a working demonstration, not seasonal or multi-year conclusions. Add overlapping taxi and sensor history after source coverage is verified.
+June 2025 includes 148 qualifying date-zone-pollutant matches across five series. June 2024 includes 145. The [comparison report](../reports/project_report.html) compares the matched June windows. The [lesson](learn_project.md) shows how the comparison was built.

@@ -152,6 +152,10 @@ def main(argv=None):
     parser.add_argument("--end", default="2025-06-30")
     parser.add_argument("--refresh-fx", action="store_true", help="Fetch full reporting window plus seven preceding days")
     parser.add_argument("--prove-rerun", action="store_true")
+    parser.add_argument("--require-air", action="store_true", help="Publish only if OpenAQ produces matched reporting days")
+    parser.add_argument("--min-air-hours", type=int, default=18, choices=range(1, 26), metavar="1-25",
+                        help="Observed hours required for an air day to enter a taxi pair")
+    parser.add_argument("--report", type=Path, default=ROOT / "reports/local_build.json")
     args = parser.parse_args(argv)
     start, end = date.fromisoformat(args.start), date.fromisoformat(args.end)
     if end < start or (end - start).days > 3660:
@@ -200,20 +204,33 @@ def main(argv=None):
         con = duckdb.connect(str(run_dir / "analytics.duckdb"))
         con.execute("SET threads = 2")
         con.execute("SET memory_limit = '1GB'")
+        con.execute("SET TimeZone = 'UTC'")
         stage("load_references", lambda: load_references(con, inputs))
         stage("transform_taxi_silver_and_gold", lambda: build_tables(con, inputs["nyc_taxi"]["local_path"], start, end))
         report["validation"] = stage("reconcile", lambda: verify(con))
         from .local_air import build_air
-        report["openaq"] = stage("check_air_capture", lambda: build_air(con, args.cache))
+        def process_air():
+            # Keep floating-point correlation reductions in a repeatable order.
+            con.execute("SET threads = 1")
+            try:
+                result = build_air(con, args.cache, min_hours=args.min_air_hours)
+            finally:
+                con.execute("SET threads = 2")
+            if args.require_air and (result["status"] != "passed" or not result["matched_days_by_series"]):
+                raise ValueError("Required OpenAQ coverage has no eligible matched dates")
+            return result
+
+        report["openaq"] = stage("check_air_capture", process_air)
         published_tables = (*GOLD_TABLES, *report["openaq"]["tables"])
         before = {name: table_fingerprint(con, name) for name in published_tables}
         if args.prove_rerun:
             stage("rerun_same_inputs", lambda: build_tables(con, inputs["nyc_taxi"]["local_path"], start, end))
             if report["openaq"]["status"] == "passed":
-                stage("rerun_air_capture", lambda: build_air(con, args.cache))
+                stage("rerun_air_capture", process_air)
             after = {name: table_fingerprint(con, name) for name in published_tables}
             if before != after:
-                raise AssertionError("Same-input rerun changed reporting tables")
+                changed = [name for name in published_tables if before[name] != after[name]]
+                raise AssertionError(f"Same-input rerun changed reporting tables: {', '.join(changed)}")
             stage("reconcile_rerun", lambda: verify(con))
             report["same_input_rerun"] = "passed: sorted table fingerprints unchanged"
         report["table_fingerprints"] = before
@@ -228,7 +245,7 @@ def main(argv=None):
         write_atomic(run_dir / "run.json", json.dumps(report, indent=2).encode())
         # Publish pointer only after complete successful stages. A failure never replaces it.
         write_atomic(args.workspace / "latest_success.json", json.dumps({"run_id": run_id, "path": f"runs/{run_id}"}, indent=2).encode())
-        write_atomic(ROOT / "reports/local_build.json", json.dumps(report, indent=2).encode())
+        write_atomic(args.report, json.dumps(report, indent=2).encode())
         print(f"Published verified local build {run_id}; OpenAQ: {report['openaq']['status']}", flush=True)
         return 0
     except Exception as error:

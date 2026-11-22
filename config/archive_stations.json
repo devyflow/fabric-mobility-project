@@ -1,0 +1,32 @@
+[
+  {
+    "location_id": 384,
+    "station_name": "CCNY",
+    "latitude": 40.8197,
+    "longitude": -73.9481,
+    "source_metadata": "https://explore.openaq.org/locations/384",
+    "provider": "AirNow",
+    "license": "US Public Domain",
+    "frequency_minutes": 60
+  },
+  {
+    "location_id": 625,
+    "station_name": "Manhattan/IS143",
+    "latitude": 40.8492,
+    "longitude": -73.9319,
+    "source_metadata": "https://explore.openaq.org/locations/625",
+    "provider": "AirNow",
+    "license": "US Public Domain",
+    "frequency_minutes": 60
+  },
+  {
+    "location_id": 631,
+    "station_name": "Queens",
+    "latitude": 40.7375,
+    "longitude": -73.8244,
+    "source_metadata": "https://explore.openaq.org/locations/631",
+    "provider": "AirNow",
+    "license": "US Public Domain",
+    "frequency_minutes": 60
+  }
+]

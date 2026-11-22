@@ -6,6 +6,7 @@ import io
 import json
 import os
 import uuid
+from calendar import monthrange
 from datetime import date, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
@@ -66,14 +67,22 @@ def get_openaq_locations(config, api_key, fetch=read_bytes):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=ROOT / "config/project.json")
+    parser.add_argument("--month", help="Override the TLC file and reporting dates with a YYYY-MM month")
+    parser.add_argument("--cache", type=Path, default=ROOT / "data/bronze")
+    parser.add_argument("--report-dir", type=Path, default=ROOT / "reports")
     parser.add_argument("--download-taxi", action="store_true", help="Download the complete sample-month Parquet file")
+    parser.add_argument("--skip-openaq-api", action="store_true", help="Use when a separate archive capture supplies OpenAQ")
     args = parser.parse_args(argv)
     config = json.loads(args.config.read_text(encoding="utf-8"))
+    if args.month:
+        first = date.fromisoformat(args.month + "-01")
+        last = first.replace(day=monthrange(first.year, first.month)[1])
+        config.update(sample_month=args.month, sample_start=str(first), sample_end=str(last))
     date.fromisoformat(config["sample_month"] + "-01")
     if date.fromisoformat(config["sample_start"]) > date.fromisoformat(config["sample_end"]):
         raise ValueError("Sample dates are reversed")
     run_id = uuid.uuid4().hex
-    store = BronzeStore(ROOT / "data/bronze")
+    store = BronzeStore(args.cache)
     manifest, checks = [], []
 
     def preserve(source, url, raw, extension):
@@ -150,19 +159,21 @@ def main(argv=None):
     check("ecb_fx", ecb)
     check("nyc_taxi", taxi)
     key = os.environ.get("OPENAQ_API_KEY")
-    if key:
+    if args.skip_openaq_api:
+        checks.append({"source": "openaq_api", "status": "skipped", "reason": "OpenAQ is captured separately"})
+    elif key:
         check("openaq", lambda: openaq(key))
     else:
         checks.append({"source": "openaq", "status": "blocked", "reason": "OPENAQ_API_KEY is not configured; no authenticated request was attempted"})
         print("openaq: blocked (API key not configured)", flush=True)
     store.write_manifest(run_id, manifest)
     report = {"run_id": run_id, "checked_at_utc": utc_now(), "scope": "Local source verification, not Fabric deployment", "checks": checks}
-    write_atomic(ROOT / "reports/latest_preflight.json", json.dumps(report, indent=2).encode("utf-8"))
+    write_atomic(args.report_dir / "latest_preflight.json", json.dumps(report, indent=2).encode("utf-8"))
     lines = ["# Source verification", "", report["scope"], "", f"Checked at {report['checked_at_utc']}", "", "| Source | Status | Evidence |", "| --- | --- | --- |"]
     for row in checks:
         details = "; ".join(f"{k}: {v}" for k, v in row.items() if k not in ("source", "status"))
         lines.append(f"| {row['source']} | {row['status']} | {details.replace('|', '/')} |")
-    write_atomic(ROOT / "reports/latest_preflight.md", ("\n".join(lines) + "\n").encode("utf-8"))
+    write_atomic(args.report_dir / "latest_preflight.md", ("\n".join(lines) + "\n").encode("utf-8"))
     return 1 if any(r["status"] == "failed" for r in checks) else 2 if any(r["status"] == "blocked" for r in checks) else 0
 
 

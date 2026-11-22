@@ -27,7 +27,7 @@ class BronzeStore:
     def save(self, source, payload, extension, source_url, run_id):
         if not re.fullmatch(r"[a-z0-9_]+", source):
             raise ValueError("Invalid source identifier")
-        if extension not in ("json", "csv", "parquet"):
+        if extension not in ("json", "csv", "csv.gz", "geojson", "parquet"):
             raise ValueError("Unsupported payload extension")
         digest = hashlib.sha256(payload).hexdigest()
         path = self.root / source / f"{digest}.{extension}"

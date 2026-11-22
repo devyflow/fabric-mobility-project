@@ -1,7 +1,10 @@
 """Check that report assets, notebook cells and pipeline dependencies are usable."""
 import ast
 import base64
+import csv
+import hashlib
 import json
+from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote
@@ -54,7 +57,32 @@ while remaining:
     assert ready, "Pipeline has a cycle or missing dependency"
     done.update(ready)
     remaining -= ready
-evidence = json.loads((ROOT / "reports/local_build.json").read_text(encoding="utf-8"))
-assert all(check["passed"] for check in evidence["validation"]["checks"])
-assert evidence["validation"]["source_rows"] == evidence["validation"]["silver_rows"]
-print(f"Verified {len(parser.local_links)} report links, {parser.images} embedded charts, six parameterized notebooks, an acyclic pipeline specification, and passing reconciliation evidence")
+evidence_names = ["local_build.json"]
+if "comparison_build.json" in parser.local_links:
+    evidence_names.append("comparison_build.json")
+for name in evidence_names:
+    evidence = json.loads((ROOT / "reports" / name).read_text(encoding="utf-8"))
+    validation = evidence["validation"]
+    assert all(check["passed"] for check in validation["checks"])
+    assert validation["source_rows"] == validation["silver_rows"]
+    assert validation["silver_rows"] == sum(validation[key] for key in (
+        "reporting_rows", "missing_pickup_date_rows", "outside_reporting_window_rows"))
+    if len(evidence_names) == 2:
+        assert evidence["openaq"]["status"] == "passed"
+        assert evidence["same_input_rerun"].startswith("passed")
+    for file, expected in evidence["transformation_source_sha256"].items():
+        assert hashlib.sha256((ROOT / file).read_bytes()).hexdigest() == expected, f"Build source has changed: {file}"
+
+if "tables/matched_air_taxi.csv" in parser.local_links:
+    series_columns = ("pickup_zone_id", "pollutant_code", "measurement_unit")
+    with (ROOT / "reports/tables/matched_air_taxi.csv").open(encoding="utf-8", newline="") as stream:
+        pairs = list(csv.DictReader(stream))
+    with (ROOT / "reports/tables/air_taxi_correlation.csv").open(encoding="utf-8", newline="") as stream:
+        summaries = list(csv.DictReader(stream))
+    series_counts = Counter(tuple(row[key] for key in series_columns) for row in pairs)
+    assert len(pairs) == len({tuple(row[key] for key in ("report_date", *series_columns)) for row in pairs})
+    assert series_counts == {tuple(row[key] for key in series_columns): int(row["matched_days"]) for row in summaries}
+    assert parser.images >= 4
+
+print(f"Verified {len(parser.local_links)} report links, {parser.images} embedded charts, six parameterized notebooks, "
+      f"acyclic pipeline dependencies, and reconciled evidence for {len(evidence_names)} run(s)")

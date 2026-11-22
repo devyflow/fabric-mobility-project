@@ -23,6 +23,7 @@ test_weekend_uses_previous_not_future_rate (test_core.QualityTests.test_weekend_
 test_zero_distance_is_flagged_not_deleted (test_core.QualityTests.test_zero_distance_is_flagged_not_deleted) ... ok
 test_conflicting_sensor_hour_fails_before_publication (test_local_air.LocalAirTests.test_conflicting_sensor_hour_fails_before_publication) ... ok
 test_exact_duplicates_and_negative_values_accounted_for (test_local_air.LocalAirTests.test_exact_duplicates_and_negative_values_accounted_for) ... ok
+test_low_coverage_stays_in_air_fact_but_does_not_pair (test_local_air.LocalAirTests.test_low_coverage_stays_in_air_fact_but_does_not_pair) ... ok
 test_missing_capture_reports_blocker_without_fake_tables (test_local_air.LocalAirTests.test_missing_capture_reports_blocker_without_fake_tables) ... ok
 test_units_stay_separate (test_local_air.LocalAirTests.test_units_stay_separate) ... ok
 test_concurrent_build_is_rejected_before_touching_outputs (test_local_build.LocalBuildTests.test_concurrent_build_is_rejected_before_touching_outputs) ... ok
@@ -32,8 +33,10 @@ test_missing_fx_does_not_delete_or_zero_charge (test_local_build.LocalBuildTests
 test_real_sql_preserves_zero_negative_and_null_records (test_local_build.LocalBuildTests.test_real_sql_preserves_zero_negative_and_null_records) ... ok
 test_rerun_keeps_same_counts_and_values (test_local_build.LocalBuildTests.test_rerun_keeps_same_counts_and_values) ... ok
 test_sunday_uses_friday_rate_and_correct_conversion (test_local_build.LocalBuildTests.test_sunday_uses_friday_rate_and_correct_conversion) ... ok
+test_ending_at_midnight_maps_to_previous_date_with_unknown_flag (test_openaq_archive.OpenAQArchiveTests.test_ending_at_midnight_maps_to_previous_date_with_unknown_flag) ... ok
+test_geographic_match_rejects_holes_and_boundaries (test_openaq_archive.OpenAQArchiveTests.test_geographic_match_rejects_holes_and_boundaries) ... ok
 
 ----------------------------------------------------------------------
-Ran 34 tests in 2.093s
+Ran 37 tests in 2.421s
 
 OK

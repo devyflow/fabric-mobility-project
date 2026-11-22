@@ -42,7 +42,7 @@ def fetch_hourly_pages(sensor_id, start_utc, end_utc, key, fetch=read_bytes):
     raise ValueError("OpenAQ paging exceeded safety bound")
 
 
-def normalize_observation(row, sensor_id, location_id):
+def normalize_observation(row, sensor_id, location_id, require_source_flag=True):
     period = row.get("period") or {}
     flags = []
     def parse(label):
@@ -69,7 +69,7 @@ def normalize_observation(row, sensor_id, location_id):
     elif value < 0:
         flags.append("negative_value")
     source_flagged = (row.get("flagInfo") or {}).get("hasFlags")
-    if source_flagged is not False:
+    if source_flagged is True or (require_source_flag and source_flagged is not False):
         flags.append("upstream_flagged_or_unknown")
     local = start.astimezone(ZoneInfo("America/New_York")) if start else None
     return {"sensor_id": sensor_id, "location_id": location_id,

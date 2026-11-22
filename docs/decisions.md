@@ -9,8 +9,9 @@
 | Flag identical rows without automatic deletion | Public taxi fields do not supply a proven globally unique trip ID | Final business-deduplication policy needs source profiling |
 | Divide USD by USD-per-EUR | Correct ECB quote direction | Helper tested |
 | Use preceding FX rate with a seven-day maximum age | Avoid look-ahead and unlimited stale-rate propagation | Proposed reporting policy, configurable; not an instructor-mandated threshold |
-| GDP remains country/year | Daily joins must not sum national GDP repeatedly | Modeling pending |
-| NYC sensor discovery before final dates | Prevent empty or misleading cross-domain comparisons | Blocked on OpenAQ key |
+| GDP remains country/year | Expanding annual GDP across days would inflate a sum | Verified locally |
+| Use reviewed fixed stations from the public OpenAQ archive in the local demo | Provides real June 2024 and June 2025 observations without an API key | Three zones and five sensor series verified locally. Credential binding for the Dataflow is pending |
+| Require 18 observed hours to pair a station-day with taxis | Reduce influence from sparse days and keep coverage visible | Analysis choice, applied to both local periods |
 | One Lakehouse with named layers, plus Warehouse | Small solo-project layout while preserving all required layers | Proposed; cloud creation pending |
 | No calendar-based execution plan | Build and verify the next dependency immediately | User preference |
 

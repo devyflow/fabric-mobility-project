@@ -7,8 +7,9 @@
 
 # CELL code
 pollutant_code = "pm25"
-measurement_unit = "ug/m3"  # Replace with the exact unit in verified OpenAQ data.
-minimum_matched_days = 20   # Reporting policy, not an instructor-mandated value.
+measurement_unit = "µg/m³"  # Use the exact unit spelling returned by the Dataflow.
+minimum_observed_hours = 18
+minimum_matched_days = 3
 
 # CELL code
 from pyspark.sql import functions as F
@@ -84,6 +85,7 @@ plt.close(fig)
 # ## Match date and measured geography before correlation
 # Average stations equally within a mapped zone/day. Join this aggregate to one
 # taxi fact row per zone/day, avoiding sensor-level multiplication of trips.
+# Retain low-coverage dates in the chart above and omit them from pairs.
 # Report sample count. A correlation is an association and cannot prove causation.
 # One month cannot establish seasonality or a long-term economic relationship.
 
@@ -92,12 +94,19 @@ locations = spark.table("gold_dim_air_location")
 if locations.groupBy("location_id").count().where("count > 1").limit(1).count():
     raise ValueError("Location mapping is not unique")
 zone_air = (air.join(locations, "location_id")
-    .where(F.col("zone_id").isNotNull() & (F.col("zone_id") != -1))
+    .where(F.col("zone_id").isNotNull() & (F.col("zone_id") != -1)
+           & (F.col("observed_hour_count") >= minimum_observed_hours))
     .groupBy("report_date", "zone_id")
     .agg(F.avg("concentration_mean").alias("concentration"), F.count("*").alias("station_count")))
 pairs = taxi.join(zone_air,(taxi.report_date == zone_air.report_date) & (taxi.pickup_zone_id == zone_air.zone_id))
-summary = pairs.groupBy("pickup_zone_id").agg(F.count("*").alias("matched_days"),
-    F.corr("trip_count", "concentration").alias("pearson_r"))
+summary = pairs.groupBy("pickup_zone_id").agg(
+    F.count("*").alias("matched_days"),
+    F.min("trip_count").alias("min_trips"), F.max("trip_count").alias("max_trips"),
+    F.min("concentration").alias("min_air"), F.max("concentration").alias("max_air"),
+    F.corr("trip_count", "concentration").alias("r")
+).select("pickup_zone_id", "matched_days",
+    F.when((F.col("matched_days") >= minimum_matched_days) & (F.col("min_trips") < F.col("max_trips"))
+           & (F.col("min_air") < F.col("max_air")), F.col("r")).alias("pearson_r"))
 display(summary.orderBy(F.desc("matched_days")))
 eligible = summary.where(F.col("matched_days") >= minimum_matched_days).select("pickup_zone_id")
 points = small_frame(pairs.join(eligible, "pickup_zone_id").select("pickup_zone_id","trip_count","concentration"))
