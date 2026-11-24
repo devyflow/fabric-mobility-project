@@ -10,7 +10,14 @@
 # and measure unusual values before deciding what to transform.
 
 # CELL code
-sample_month = "2025-06"  # Development example; not the final reporting range.
+sample_month = "2025-06"
+
+# CELL code
+import re
+
+# Fabric applies pipeline overrides immediately after the parameter cell.
+if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", sample_month):
+    raise ValueError("Expected YYYY-MM")
 source_path = f"Files/bronze/nyc_taxi/source_month={sample_month}/yellow_tripdata_{sample_month}.parquet"
 
 # CELL markdown

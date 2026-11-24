@@ -47,6 +47,14 @@ for file in notebooks:
     for cell in code:
         ast.parse("".join(cell["source"]))
         assert cell["outputs"] == [], "Do not package invented execution output"
+    if file.stem in ("01_inspect_taxi_bronze", "02_taxi_silver"):
+        # Run the pure Python setup in the same order as a notebook parameter override.
+        values = {}
+        exec("".join(code[0]["source"]), values)
+        values["sample_month"] = "2024-06"
+        exec("".join(code[1]["source"]), values)
+        expected_path = "Files/bronze/nyc_taxi/source_month=2024-06/yellow_tripdata_2024-06.parquet"
+        assert values["source_path"] == expected_path, f"Month override ignored in {file.name}"
 
 pipeline = json.loads((ROOT / "pipelines/master.spec.json").read_text(encoding="utf-8"))
 activities = {row["name"]: row for row in pipeline["activities"]}
@@ -84,5 +92,5 @@ if "tables/matched_air_taxi.csv" in parser.local_links:
     assert series_counts == {tuple(row[key] for key in series_columns): int(row["matched_days"]) for row in summaries}
     assert parser.images >= 4
 
-print(f"Verified {len(parser.local_links)} report links, {parser.images} embedded charts, six parameterized notebooks, "
-      f"acyclic pipeline dependencies, and reconciled evidence for {len(evidence_names)} run(s)")
+print(f"Verified {len(parser.local_links)} report links, {parser.images} charts, six notebooks, taxi month overrides, "
+      f"pipeline dependencies, and reconciled evidence for {len(evidence_names)} run(s)")

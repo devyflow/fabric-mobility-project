@@ -1,61 +1,61 @@
 {
-  "run_id": "ba1993bf99284e1ca06ab2cdb444ba6b",
-  "started_at_utc": "2026-11-22T08:40:10.992398+00:00",
+  "run_id": "caafcd0d5fcd435b8cc0c93a2c708b71",
+  "started_at_utc": "2026-11-24T08:16:15.494520+00:00",
   "scope": "Local verification; Fabric execution pending",
   "stages": [
     {
       "name": "verify_input_checksums",
-      "started_at_utc": "2026-11-22T08:40:10.997213+00:00",
+      "started_at_utc": "2026-11-24T08:16:15.499375+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:40:11.359673+00:00"
+      "completed_at_utc": "2026-11-24T08:16:15.881995+00:00"
     },
     {
       "name": "load_references",
-      "started_at_utc": "2026-11-22T08:40:11.449077+00:00",
+      "started_at_utc": "2026-11-24T08:16:16.000937+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:40:12.359439+00:00"
+      "completed_at_utc": "2026-11-24T08:16:16.912560+00:00"
     },
     {
       "name": "transform_taxi_silver_and_gold",
-      "started_at_utc": "2026-11-22T08:40:12.359510+00:00",
+      "started_at_utc": "2026-11-24T08:16:16.912633+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:40:23.968375+00:00"
+      "completed_at_utc": "2026-11-24T08:16:31.164217+00:00"
     },
     {
       "name": "reconcile",
-      "started_at_utc": "2026-11-22T08:40:23.968464+00:00",
+      "started_at_utc": "2026-11-24T08:16:31.164302+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:40:24.834144+00:00"
+      "completed_at_utc": "2026-11-24T08:16:32.243808+00:00"
     },
     {
       "name": "check_air_capture",
-      "started_at_utc": "2026-11-22T08:40:24.897831+00:00",
+      "started_at_utc": "2026-11-24T08:16:32.332056+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:40:41.050093+00:00"
+      "completed_at_utc": "2026-11-24T08:16:53.313613+00:00"
     },
     {
       "name": "rerun_same_inputs",
-      "started_at_utc": "2026-11-22T08:40:41.951088+00:00",
+      "started_at_utc": "2026-11-24T08:16:54.217981+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:40:53.119428+00:00"
+      "completed_at_utc": "2026-11-24T08:17:07.232706+00:00"
     },
     {
       "name": "rerun_air_capture",
-      "started_at_utc": "2026-11-22T08:40:53.119572+00:00",
+      "started_at_utc": "2026-11-24T08:17:07.232779+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:18.183385+00:00"
+      "completed_at_utc": "2026-11-24T08:17:27.712942+00:00"
     },
     {
       "name": "reconcile_rerun",
-      "started_at_utc": "2026-11-22T08:41:18.990644+00:00",
+      "started_at_utc": "2026-11-24T08:17:28.613647+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:19.725869+00:00"
+      "completed_at_utc": "2026-11-24T08:17:29.583714+00:00"
     },
     {
       "name": "export_reporting_tables",
-      "started_at_utc": "2026-11-22T08:41:19.725940+00:00",
+      "started_at_utc": "2026-11-24T08:17:29.583790+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:20.022727+00:00"
+      "completed_at_utc": "2026-11-24T08:17:29.945983+00:00"
     }
   ],
   "duckdb_version": "2.0.1",
@@ -66,7 +66,7 @@
     "src/fabric_project/http.py": "0345620248b40b49f0dc2f921db3822309d9daf77941803a9531726b389d1593",
     "src/fabric_project/ingest_air.py": "3f1bade75d5bf49acfaf927b520d88a9fcba1106b9c4821b5390fa1d1f20c597",
     "src/fabric_project/local_air.py": "560320c25e07ab451343855bf9fcf97a95cc112592f9aa1290a6c8d7e5de1601",
-    "src/fabric_project/local_build.py": "c1f201f8c89bce80808a041d72ff7940866f89fab85d13357c4be579b79823e2",
+    "src/fabric_project/local_build.py": "028bb6adb7c5cbca75c369391d234fa956f488c74cb7e835e44399f27ff66925",
     "src/fabric_project/openaq_archive.py": "0cda4ed7fe1d1944c88b70fb128d57dafa8abd8c0f44b74ade31e0677e8b4a10",
     "src/fabric_project/preflight.py": "e6954f03005355a16286d740b098216bb90d192251eee068fbf28856e8d2af03",
     "src/fabric_project/quality.py": "78ead1e234df30d2672824a65b83e48794da07902dc39e0495570aa9918d614b",
@@ -305,5 +305,5 @@
     "air_taxi_correlation": "279bec251d46db5ae23ab24cb5d92d3c89205f80ad7d6957a8779bfa017da9b7"
   },
   "status": "passed_locally",
-  "completed_at_utc": "2026-11-22T08:41:20.022793+00:00"
+  "completed_at_utc": "2026-11-24T08:17:29.946061+00:00"
 }

@@ -1,6 +1,6 @@
 # Learn the project step by step
 
-Start with the [report](../reports/project_report.html) and the [two real examples](../reports/trace_example.json). Work through each lesson in order. For each step, ask what comes in, what the code changes, what comes out, and how you can check it. Use the [seven-minute breakdown script](demo_script.md) when you can explain the examples yourself.
+Start with [the hands-on build](walkthrough.md). That walkthrough runs the actual transformation code on two zones and one week. Come back here to review the source, architecture and reporting details, then check them against the [report](../reports/project_report.html) and the [record trace](../reports/trace_example.json).
 
 ## 1. The question you are answering
 

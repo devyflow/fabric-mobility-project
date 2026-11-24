@@ -26,9 +26,17 @@ test_exact_duplicates_and_negative_values_accounted_for (test_local_air.LocalAir
 test_low_coverage_stays_in_air_fact_but_does_not_pair (test_local_air.LocalAirTests.test_low_coverage_stays_in_air_fact_but_does_not_pair) ... ok
 test_missing_capture_reports_blocker_without_fake_tables (test_local_air.LocalAirTests.test_missing_capture_reports_blocker_without_fake_tables) ... ok
 test_units_stay_separate (test_local_air.LocalAirTests.test_units_stay_separate) ... ok
+test_cached_taxi_file_must_match_reporting_month (test_local_build.LocalBuildTests.test_cached_taxi_file_must_match_reporting_month) ... ok
 test_concurrent_build_is_rejected_before_touching_outputs (test_local_build.LocalBuildTests.test_concurrent_build_is_rejected_before_touching_outputs) ... ok
 test_duplicate_rate_fails_validation_instead_of_inflating_totals (test_local_build.LocalBuildTests.test_duplicate_rate_fails_validation_instead_of_inflating_totals) ... ok
 test_failed_build_preserves_last_success_pointer_and_releases_lock (test_local_build.LocalBuildTests.test_failed_build_preserves_last_success_pointer_and_releases_lock) ... ok
+verify_input_checksums: passed
+load_references: passed
+transform_taxi_silver_and_gold: passed
+reconcile: passed
+check_air_capture: passed
+export_reporting_tables: passed
+test_failed_evidence_write_preserves_previous_success_pointer (test_local_build.LocalBuildTests.test_failed_evidence_write_preserves_previous_success_pointer) ... ok
 test_missing_fx_does_not_delete_or_zero_charge (test_local_build.LocalBuildTests.test_missing_fx_does_not_delete_or_zero_charge) ... ok
 test_real_sql_preserves_zero_negative_and_null_records (test_local_build.LocalBuildTests.test_real_sql_preserves_zero_negative_and_null_records) ... ok
 test_rerun_keeps_same_counts_and_values (test_local_build.LocalBuildTests.test_rerun_keeps_same_counts_and_values) ... ok
@@ -37,6 +45,6 @@ test_ending_at_midnight_maps_to_previous_date_with_unknown_flag (test_openaq_arc
 test_geographic_match_rejects_holes_and_boundaries (test_openaq_archive.OpenAQArchiveTests.test_geographic_match_rejects_holes_and_boundaries) ... ok
 
 ----------------------------------------------------------------------
-Ran 37 tests in 2.421s
+Ran 39 tests in 3.858s
 
 OK

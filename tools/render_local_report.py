@@ -56,6 +56,10 @@ gdp = con.execute("SELECT year,gdp_current_usd FROM dim_gdp ORDER BY year").fetc
 rates = con.execute("SELECT report_date,usd_per_eur FROM dim_fx ORDER BY report_date").fetchall()
 totals = con.execute("SELECT sum(trip_count),sum(base_fare_usd),sum(total_charged_usd),sum(total_charged_eur),sum(zero_distance_trip_count) FROM fact_taxi_daily").fetchone()
 negatives = con.execute("SELECT count(*),sum(fare_usd) FROM reporting_taxi WHERE fare_usd < 0").fetchone()
+zero_distance_charges = con.execute("""
+    SELECT coalesce(sum(total_charged_usd), 0)
+    FROM reporting_taxi WHERE distance_miles = 0
+""").fetchone()[0]
 def record(query, parameters=None):
     result = con.execute(query, parameters or [])
     return dict(zip([column[0] for column in result.description],result.fetchone()))
@@ -71,6 +75,7 @@ trace_payload = {"scope":"Actual public TLC record traced through local processi
     "gold_group":record("SELECT * FROM fact_taxi_daily WHERE report_date=? AND pickup_zone_id=?",[trace['pickup_date'],trace['pickup_zone_id']]),
     "chosen_fx":record("SELECT * FROM dim_fx WHERE report_date=?",[trace['pickup_date']]),
     "explanation":"This retained source row contributes one trip and its recorded amounts to the date/zone total. A zero-distance flag does not remove its charges."}
+trace_zone = record("SELECT zone_name FROM dim_zone WHERE zone_id=?", [trace["pickup_zone_id"]])["zone_name"]
 (output/"trace_example.json").write_text(json.dumps(trace_payload,default=str,indent=2)+"\n",encoding="utf-8")
 flags = con.execute("SELECT flag,count(*) AS affected_rows FROM silver_taxi,unnest(quality_flags) AS t(flag) GROUP BY flag ORDER BY affected_rows DESC").fetchall()
 with (output/"quality_summary.csv").open("w",newline="",encoding="utf-8") as stream:
@@ -256,17 +261,37 @@ def image_tag(name, alt):
     encoded = base64.b64encode((output/name).read_bytes()).decode()
     return f'<img alt="{html.escape(alt)}" src="data:image/png;base64,{encoded}">'
 v = run["validation"]
-rows = "".join(f'<tr><td>{html.escape(c["name"].replace("_"," "))}</td><td>Passed</td></tr>' for c in v["checks"])
+check_rows = []
+for check in v["checks"]:
+    result = "Passed"
+    if "expected" in check:
+        result = f"Gold and Silver both total {check['actual']} USD"
+    elif "exception_rows" in check:
+        result = f"{check['exception_rows']} exceptions"
+    label = html.escape(check["name"].replace("_", " "))
+    check_rows.append(f"<tr><td>{label}</td><td>{html.escape(result)}</td></tr>")
+rows = "".join(check_rows)
 links = "".join(f'<li><a href="tables/{f.name}">{f.stem.replace("_"," ")}</a></li>' for f in exported_files)
 air_images = "".join(image_tag(name, alt) for name, alt in air_charts)
 period_comparison = comparison_section(*comparison) if comparison else ""
+charge = trace["total_charged_usd"]
+charge_label = f"${charge:,.2f} charged" if charge is not None else "charge missing"
+group = trace_payload["gold_group"]
 document = f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fabric project local verification report</title>
 <style>body{{font:17px/1.6 system-ui,sans-serif;color:#172033;background:#f1f5f9;margin:0}}main{{max-width:1140px;margin:auto;padding:44px 30px;background:white}}h1{{font-size:38px;line-height:1.15;max-width:850px}}h2{{margin-top:38px}}p{{max-width:920px}}.eyebrow{{font-size:13px;letter-spacing:.1em;color:#2856a6;font-weight:700}}.metrics{{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin:30px 0}}.metric strong{{font-size:30px;display:block}}.metric span{{font-size:14px;color:#475569}}img{{width:100%;height:auto}}table{{border-collapse:collapse;width:100%;font-size:15px}}td,th{{border-bottom:1px solid #dbe3ee;padding:9px;text-align:left}}summary{{cursor:pointer;font-weight:700}}a{{color:#2856a6}}.note{{color:#475569}}@media(max-width:700px){{main{{padding:24px 16px}}h1{{font-size:29px}}.metrics{{grid-template-columns:1fr}}}}@media print{{body{{background:white}}main{{padding:0}}details{{display:block}}}}</style>
 <main><p class="eyebrow">VERIFIED LOCAL BUILD · FABRIC DEPLOYMENT PENDING</p>
 <h1>New York taxi activity, air quality and economics</h1>
 <p>Local reporting for {run['reporting_start']} to {run['reporting_end']} using official TLC, OpenAQ, ECB and World Bank sources. The run evidence records each completed validation stage.</p>
+<p><a href="../docs/walkthrough.md">Rebuild the tables on one week of real data</a></p>
 <div class="metrics"><div class="metric"><strong>{totals[0]:,}</strong><span>pickups inside the reporting period</span></div><div class="metric"><strong>${totals[2]:,.2f}</strong><span>recorded total charges, including negative entries</span></div><div class="metric"><strong>{totals[4]:,}</strong><span>zero-distance trips retained</span></div></div>
+<details><summary>Follow one trip through the tables</summary>
+<table><thead><tr><th>Stage</th><th>Where to find the record</th><th>What the data says</th></tr></thead><tbody>
+<tr><td>Bronze</td><td>Source file row {trace['file_row_number']:,}</td><td>{trace['trip_distance']:g} miles and {charge_label}</td></tr>
+<tr><td>Silver</td><td>Same source row, with typed fields</td><td>Pickup on {trace['pickup_date']}, hour {trace['pickup_hour']}, flagged for zero distance</td></tr>
+<tr><td>Gold</td><td>{trace['pickup_date']} and {html.escape(trace_zone)}</td><td>The row is one of {group['trip_count']:,} pickups in that day and zone.</td></tr>
+</tbody></table>
+<p>Removing every zero-distance row would omit ${zero_distance_charges:,.2f} in net recorded charges from this reporting window. <a href="trace_example.json">See the source row and the exact Gold totals</a>.</p></details>
 <h2>1. Mobility</h2>{image_tag('mobility_overview.png','Trips by day, pickup zone and hour, plus average base fare')}
 <p>Recorded charges are values submitted in the trip records. The totals include {negatives[0]:,} rows with negative base fares, which sum to ${negatives[1] or 0:,.2f}.</p>
 <h2>2. Currency and annual context</h2>{image_tag('economic_context.png','Matched USD and EUR charges, effective rates and annual US GDP')}
@@ -276,8 +301,8 @@ document = f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="
 <h2>4. Reconciliation and recovery</h2><p>All {v['source_rows']:,} source records remain in Silver. {v['reporting_rows']:,} have pickup dates inside the reporting window. {v['outside_reporting_window_rows']:,} are outside it, and {v['missing_pickup_date_rows']:,} lack a usable pickup date. Excluded reporting records remain traceable in detailed data.</p>
 <p>Same-input rerun: {html.escape(run.get('same_input_rerun','not requested'))}. The build publishes its latest-success pointer only after validation passes.</p>
 <details><summary>Inspect validation checks</summary><table><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>{rows}</tbody></table></details>
-<h2>5. Walk through the implementation</h2><ol><li>Inspect source schemas and checksums.</li><li>Retain raw source versions in Bronze.</li><li>Standardize fields and flag unusual records in Silver.</li><li>Build daily/date/zone aggregates and calendar FX mappings in Gold.</li><li>Reconcile counts and money, rerun, then publish.</li><li>Deploy the corresponding notebooks, Dataflows and reporting schema to Fabric when capacity works.</li></ol>
-<p><a href="../docs/learn_project.md">Step-by-step project lesson</a> · <a href="../docs/requirements.md">Requirement checklist</a> · <a href="local_build.json">Run evidence</a> · <a href="trace_example.json">Trace real values</a> · <a href="quality_summary.csv">Quality flag counts</a></p>
+<h2>5. Files for the defense</h2>
+<p><a href="../docs/learn_project.md">Architecture notes</a> · <a href="../docs/requirements.md">Requirement checklist</a> · <a href="local_build.json">Run evidence</a> · <a href="quality_summary.csv">Quality flag counts</a></p>
 <details><summary>Download reporting tables</summary><ul>{links}</ul></details>
 <p class="note">Run {run['run_id']} · completed {run['completed_at_utc']}. Seasonal conclusions require more overlapping history. Aggregate EUR values are rounded to four decimal places per date and zone.</p>
 <p class="note">Data sources include <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">NYC TLC</a>, <a href="https://docs.openaq.org/aws/about">OpenAQ</a>, <a href="https://data.cityofnewyork.us/Transportation/NYC-Taxi-Zones/8meu-9t5y/data_preview">NYC Taxi Zone boundaries</a>, <a href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html">ECB</a> and <a href="https://api.worldbank.org/v2/country/USA/indicator/NY.GDP.MKTP.CD?format=json">World Bank</a>. Retrieval metadata and SHA-256 checksums appear in the run evidence.</p></main></html>'''

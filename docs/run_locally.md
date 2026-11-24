@@ -2,6 +2,8 @@
 
 The local runner proves data processing and reporting rules while Fabric access is being resolved. Final course acceptance still requires Fabric Lakehouse/OneLake, Dataflows Gen2, Pipelines, PySpark execution, Warehouse, and an automated cloud run.
 
+To learn what the runner does, start with the [practice build](walkthrough.md) before starting the full two-month run.
+
 ## Reproduce the local build
 
 Create a Python virtual environment and install the local dependencies. From the project root in PowerShell, run:
@@ -24,7 +26,7 @@ For a repeat run with the same downloaded inputs, use `--reuse-captures`. To reu
   --comparison-cache ../../work/june-2024-inputs
 ```
 
-Each build selects one content version per source from its Bronze manifests and verifies the checksums. It keeps each run-specific database and exports in scratch storage. The HTML, graphs, presentation trace and main evidence appear in `reports/`. The 2024 evidence has its own file. For a continuous multi-month analysis, build a version-selection plan for each requested taxi month before combining the Gold facts.
+Each build selects one content version per source from its Bronze manifests and verifies the checksums. It checks that the taxi filename matches the requested reporting month. It keeps each run-specific database and exports in scratch storage. The HTML, graphs, presentation trace and main evidence appear in `reports/`. The 2024 evidence has its own file. For a continuous multi-month analysis, build a version-selection plan for each requested taxi month before combining the Gold facts.
 
 ## Try the separate authenticated OpenAQ path
 

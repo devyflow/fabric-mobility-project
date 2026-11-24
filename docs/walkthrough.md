@@ -1,74 +1,192 @@
-# Explain the project step by step
+# Build the project yourself on a small slice
 
-Use [the full lesson](learn_project.md) to study how the completed local runs work. The diagram here shows the Fabric deployment path.
+You are building tables that answer questions about taxi pickups and charges. Start with one original taxi row. Work up to two zones, then add the exchange rate and an air monitor. Each step ends with a number you can reproduce.
 
-## Opening
+## Open the practice database
 
-"I am building an analytics platform in Microsoft Fabric that combines taxi activity, air quality, GDP, and exchange rates. The purpose is to compare mobility with environmental patterns and express taxi charges in different currencies. I preserve original data, prepare consistent tables, and organize reporting results into facts and dimensions."
+Open PowerShell in the project folder. This machine already has the Python dependencies and the captured June 2025 data.
 
-## Follow the data
-
-```mermaid
-flowchart LR
-    A[Taxi files] --> B[Pipeline Copy]
-    C[OpenAQ GDP ECB] --> D[Dataflows Gen2]
-    B --> E[Bronze original data]
-    D --> E
-    E --> F[PySpark transformations]
-    F --> G[Silver detailed Delta tables]
-    G --> H[Gold aggregates]
-    H --> I[Warehouse star schema]
-    I --> J[Visualizations]
+```powershell
+$env:PYTHONPATH = '../../work/analytics_runtime'
+python -X utf8 -i tools/practice_build.py --cache ../../work/fabric-source-cache/bronze
 ```
 
-This is the target architecture, not a claim of current deployment. Consult requirements.md for status.
+Wait for `>>>`. Paste the Python blocks below **one at a time into that same prompt**. The practice database lives in memory, so you can start fresh by typing `exit()` and running the command again. On another machine, follow [local setup](run_locally.md) and point `--cache` at the June 2025 Bronze directory.
 
-## Step 1 Sources
+## 1. Open the original file and look at one trip
 
-"Taxi files describe recorded trips. OpenAQ describes sensor measurements. GDP supplies annual national context. ECB supplies daily published currency rates. They have different dates, locations, units, and refresh frequencies, so I cannot simply join all raw rows."
+```python
+sql("""
+    SELECT file_row_number, tpep_pickup_datetime, PULocationID,
+           trip_distance, fare_amount, total_amount
+    FROM taxi_file
+    WHERE file_row_number = 158
+""")
+```
 
-Show `config/project.json` and the reviewed stations in `config/air_stations.json`. The two local runs verify June 2025 and June 2024 measurements for those stations.
+You should see **zone 209, 0.0 miles, $37.50 base fare and $39.00 total charged**. This is row 158 counting from zero in TLC's original June 2025 Parquet file. `taxi_file` is a view that reads the captured file. Parquet is the file format, and a view is a saved query you can use like a table.
 
-## Step 2 Bronze and evidence
+The original ingest was done by [preflight.py](../src/fabric_project/preflight.py). [bronze.py](../src/fabric_project/bronze.py) preserved the bytes and added a manifest with the source URL and a SHA-256 checksum. A checksum changes when the file contents change. The practice loader verifies those bytes before letting you query them.
 
-"I preserve the exact downloaded bytes and calculate a SHA-256 checksum. Identical downloads reuse the same stored payload; changed source content gets a different file. Each run has its own manifest so I can trace where a value came from."
+<details>
+<summary>How to populate Bronze from an empty folder</summary>
 
-Show `src/fabric_project/bronze.py` and the latest source-check report. Distinguish this local verification tool from the required Fabric Pipelines and Dataflows.
+Run these commands in PowerShell from the project root after installing the dependencies. The first downloads the June 2025 taxi file, zone lookup, World Bank GDP and ECB rates. The second captures the public OpenAQ archive for June and preserves the taxi-zone geometry used to assign monitors. Its date window includes any midnight-ending readings needed to complete June 30. This is the data acquisition step that created the practice inputs.
 
-Question: Why keep raw data? Answer: to reproduce transformations, inspect suspicious records, and recover from a faulty transformation without relying on an unchanged upstream source.
+```powershell
+$env:PYTHONPATH = 'src'
+python -m fabric_project.preflight --month 2025-06 --cache data/practice/bronze --report-dir data/practice/preflight --download-taxi --skip-openaq-api
+python -m fabric_project.openaq_archive --cache data/practice/bronze --start 2025-06-01 --end 2025-06-30
+python -X utf8 -i tools/practice_build.py --cache data/practice/bronze
+```
 
-## Step 3 Inspect before cleaning
+The commands print their checks and source counts. Look in `data/practice/bronze/_runs` for the manifests. When using the shared runtime on this machine, set `PYTHONPATH` to `src;../../work/analytics_runtime`.
 
-Open notebook 01. Read the source schema, row count, zero-distance count, missing-fare count, and date range. The actual local Parquet profile found **4,322,960 records** in the June 2025 delivery. **134,896** had zero recorded distance; **109,304** of those had a positive base fare. One example recorded **$37.50** in base fare and **0 miles**. This shows why a zero-distance filter would change financial reporting. It does not explain what happened on that particular trip. See [the measured profile](../reports/taxi_profile.json). Confirm the counts independently once the Fabric notebook executes.
+</details>
 
-Question: Are zero-distance trips errors? Answer: not necessarily. A meter can record charges even if the vehicle does not travel. I retain those records and flag them for investigation.
+## 2. Make Silver and test the zero-distance decision
 
-## Step 4 Silver transformation
+Build a small practice input from the real file. Take June 1–7 and the two pickup zones used in the examples.
 
-Open notebook 02. Walk through its cells in order: source contract, standardized fields, quality flags, duplicate candidates, count reconciliation, and partition write.
+```python
+sql("""
+    CREATE TABLE source_taxi AS
+    SELECT * FROM taxi_file
+    WHERE tpep_pickup_datetime >= TIMESTAMP '2025-06-01'
+      AND tpep_pickup_datetime < TIMESTAMP '2025-06-08'
+      AND PULocationID IN (152, 209)
+""")
+sql("SELECT count(*) AS source_rows FROM source_taxi")
+run_sql_file("local_taxi_silver.sql")
+sql("""
+    SELECT file_row_number, pickup_date, pickup_hour,
+           fare_usd, total_charged_usd, quality_flags
+    FROM silver_taxi
+    WHERE file_row_number = 158
+""")
+```
 
-"I preserve original columns. A failed conversion is visible through a null standardized value and a flag. I do not silently drop the source row. The source month controls the load partition; the pickup date controls reporting. They need not be the same."
+There should be **4,238 source rows**. Open [the actual Silver SQL](../sql/local_taxi_silver.sql). `typed` adds new columns of consistent types. `enriched` extracts the date and hour from the pickup timestamp. The last `SELECT` adds the flags. For row 158, the new fields include hour **0** and the flag **`zero_distance`**.
 
-Question: How do reruns avoid double-counting? Answer: the notebook replaces only the selected source-month partition. The pipeline will prevent concurrent writers to that partition. Business duplicates need separate evidence; a row hash is not a guaranteed trip identifier.
+Try the counterfactual. How much would a zero-distance filter drop?
 
-## Step 5 Currency example
+```python
+sql("""
+    SELECT count(*) AS retained_rows,
+           count(*) FILTER (WHERE distance_miles = 0) AS zero_distance_rows,
+           sum(total_charged_usd) FILTER (WHERE distance_miles = 0) AS charges_on_those_rows
+    FROM silver_taxi
+""")
+```
 
-The following is an illustrative arithmetic example, not an observed ECB rate: if 1 EUR equals 1.10 USD, then 110 USD equals 100 EUR. Divide by the USD-per-EUR rate. Missing rates stay missing; weekends can use a documented preceding-rate policy with a freshness limit. Never use a future rate.
+Expected **4,238 retained rows**, including **227 zero-distance records** with **$5,814.98** in total charges. Those are sample numbers. In this project zero distance is a flag, because the source gives evidence of what was charged even when the reported distance is zero. `NULL` means a field is missing. It is a different condition with its own check.
 
-## Step 6 Facts and dimensions
+## 3. Build the lookup tables and the first Gold fact
 
-The table definitions and aggregation notebooks are written; live loading is pending. Explain the grain: FactTaxiDaily is date by pickup zone. Air quality is date by location by pollutant in a declared unit. Date and zone dimensions describe keys. FX is date/currency pair; GDP is country/year. Aggregate compatible grains before comparison to avoid multiplying fares by the number of sensor readings.
+Load the saved sources for zone names, FX, and GDP. Set the reporting dates and maximum age of an exchange rate. Then run the project's [Gold SQL](../sql/local_gold.sql).
 
-## Step 7 Interpret carefully
+```python
+load_references(db, inputs)
+sql("""
+    CREATE TABLE run_config AS
+    SELECT DATE '2025-06-01' AS start_date, DATE '2025-06-07' AS end_date,
+           7 AS max_fx_age_days
+""")
+run_sql_file("local_gold.sql")
+sql("""
+    SELECT report_date, zone_name, trip_count, total_charged_usd, total_charged_eur
+    FROM fact_taxi_daily
+    JOIN dim_zone ON zone_id = pickup_zone_id
+    WHERE report_date = DATE '2025-06-01' AND pickup_zone_id = 209
+""")
+sql("""
+    SELECT report_date, source_rate_date, usd_per_eur, rate_age_days
+    FROM dim_fx WHERE report_date = DATE '2025-06-01'
+""")
+```
 
-The [local report](../reports/project_report.html) shows mobility, economic context, air quality and paired observations. Explain coverage and the number of matched dates. Describe the association with a zone, pollutant and period. GDP is national annual context.
+On June 1, zone 209 is **Seaport** and has **409 pickups** with **$11,014.59** in recorded charges. Read the `GROUP BY pickup_date, pickup_zone_id` line in the SQL. That pair is the **grain** of this table. Grain means what one row represents. The $39 trip contributes one count and $39 to that one row.
 
-## Short demo sequence
+June 1 was a Sunday. The rate comes from Friday May 30, **1.1339 USD per EUR**, two days earlier. Dividing the USD charge by 1.1339 gives about **€9,713.90**. Read the `LEFT JOIN silver_fx` and the ranking step in Gold SQL. They pick the latest valid rate on or before the date, up to seven days old. A missing rate leaves the EUR value empty and preserves the USD charge.
 
-1. Show the requirement checklist and mark what is actually implemented.
-2. Show source configuration and the verification report.
-3. Trace a downloaded source file to its checksum and manifest.
-4. In Fabric, run source inspection and show actual profile counts.
-5. Run Silver transformation and compare counts.
-6. Rerun the same month and show no count inflation.
-7. Show the actual local report, the real-row trace in `reports/trace_example.json`, and the same-input rerun evidence in `reports/local_build.json`. Add live Warehouse and scheduled-run demonstrations after cloud execution works.
+```python
+sql("SELECT year, gdp_current_usd FROM dim_gdp ORDER BY year")
+```
+
+GDP is a country/year lookup for annual context. If you attached the annual amount to each daily row and summed it, you would count the same GDP many times.
+
+## 4. Build the air fact and join it to the taxi fact
+
+The air source is a captured OpenAQ archive file for each station and date. The code verifies the files and matches station coordinates to official TLC zone boundaries. It then averages hourly readings by date, station, pollutant, and unit. Run the real [local air module](../src/fabric_project/local_air.py).
+
+```python
+air = build_air(db, cache, min_hours=18)
+sql("""
+    SELECT report_date, location_id, pollutant_code,
+           observed_hour_count, round(concentration_mean, 4) AS mean_pm25
+    FROM fact_air_quality_daily
+    WHERE report_date = DATE '2025-06-01' AND location_id = 384
+      AND pollutant_code = 'pm25'
+""")
+sql("""
+    SELECT report_date, pickup_zone_id, trip_count,
+           round(concentration, 4) AS mean_pm25
+    FROM matched_air_taxi
+    WHERE report_date = DATE '2025-06-01'
+      AND pickup_zone_id = 152 AND pollutant_code = 'pm25'
+""")
+```
+
+Station 384 is **CCNY**. It had **24 observed hours** and a daily mean of **3.4042 µg/m³**. CCNY is in zone **152, Manhattanville**, where the taxi fact recorded **188 pickups** that day. Those values form one point in [the PM2.5 scatterplot](../reports/project_report.html).
+
+Try to explain why the join uses the daily tables. Joining all 188 trips to all 24 readings could produce **4,512 rows** for one date and zone. The code first gives each side its intended grain, then matches on the shared date and zone within a pollutant and unit.
+
+**Make a decision you can defend.** Change the monitor threshold from 18 observed hours to 24 in the practice database.
+
+```python
+print("Pairs with 18 hours:", air["matched_days_by_series"])
+strict_air = build_air(db, cache, min_hours=24)
+print("Pairs with 24 hours:", strict_air["matched_days_by_series"])
+sql("""
+    SELECT pickup_zone_id, pollutant_code, matched_days, round(pearson_r, 3) AS r
+    FROM air_taxi_correlation ORDER BY pollutant_code
+""")
+```
+
+Write down your two counts and pick the rule you would use for a follow-up. The expected pair counts are **14 at 18 hours** and **12 at 24 hours**. Requiring 24 hours improves day coverage and can remove usable dates. Eighteen keeps more days with some missing readings. Compare the sample sizes before interpreting Pearson's `r`, which summarizes how the paired values move together. The project report uses the same **18-hour** rule for both months.
+
+## 5. Check that you can rebuild the same result
+
+```python
+audit = verify(db)
+print(audit["source_rows"], audit["silver_rows"], audit["reporting_rows"])
+before = table_fingerprint(db, "fact_taxi_daily")
+run_sql_file("local_taxi_silver.sql")
+run_sql_file("local_gold.sql")
+print("Same Gold rows and values:", before == table_fingerprint(db, "fact_taxi_daily"))
+```
+
+Expected **4,238 4,238 4,238** and **`True`**. The first three counts match because this practice input already has a seven-day filter. The full June 2025 file has 20 rows with pickup dates outside June, which it keeps in Silver. The fingerprint check compares the sorted values as well as the row count. The full runner also checks air tables and publishes a success pointer only after checks and exports succeed.
+
+For a concrete recovery example, read `test_failed_evidence_write_preserves_previous_success_pointer` in [test_local_build.py](../tests/test_local_build.py). It forces the final evidence write to fail and checks that the previous run remains the latest successful one.
+
+## 6. Connect your practice rebuild to the full project
+
+See the data points that would drive a trips-per-day chart for your two zones.
+
+```python
+sql("SELECT report_date, trip_count FROM mobility_daily ORDER BY report_date")
+```
+
+June 1 should total **597 pickups**, from 409 in Seaport and 188 in Manhattanville. The report generator does the same kind of `SELECT` over the full-month Gold table and sends the dates and counts to the chart. The full project rebuilds all zones for two June windows, checks both rebuilds and exports the reporting tables. [Report generator](../tools/render_local_report.py), [full local commands](run_locally.md).
+
+| Part | Where to see it run locally | Fabric component prepared for the course |
+| --- | --- | --- |
+| Bring in the data | `preflight.py` and `openaq_archive.py` save the original bytes and manifest | The taxi Copy activity and the three API Dataflows land the data in OneLake. [Fabric setup](fabric_setup.md) |
+| Inspect and prepare | `local_taxi_silver.sql`, `load_references`, and `local_air.py` add typed fields and checks | Notebooks 01–03 profile the taxis and prepare taxi and economic Silver tables. Notebook 05 prepares air Silver and Gold. [Notebook sources](../notebooks/source/) |
+| Produce report tables | `local_gold.sql` groups taxis and builds date and FX tables. `local_air.py` builds the air fact and matches | Notebook 04 builds taxi, date, zone and FX Gold tables. Warehouse SQL defines and loads facts and dimensions for SQL reporting. [Warehouse scripts](../warehouse/) |
+| Run in order and report | `local_build.py` logs each stage. `run_local_demo.py` runs both months. `render_local_report.py` reads the tables for the charts | The master pipeline specification describes the dependency order. Notebook 06 creates charts. Live Fabric deployment and scheduled execution are pending. [Pipeline specification](../pipelines/master.spec.json) |
+
+To see the order the actual files were added, leave the Python prompt and run `git log --reverse --oneline`. The history shows the first Fabric source and modeling drafts, the local taxi build, the addition of verified OpenAQ archive data, and the changes from this review.
+
+For the defense, choose a row and a chart you have walked through yourself. Explain what came in, the transformation you ran, why you used that rule, and the result you checked. Keep your own notes from the 18-hour and 24-hour comparison. Use facts you verified and describe any assistance accurately.

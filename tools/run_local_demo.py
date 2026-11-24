@@ -25,9 +25,6 @@ def main():
     ]
     if caches[0] == caches[1]:
         parser.error("Use one Bronze directory per source month")
-    sys.path.insert(0, str(ROOT / "src"))
-    from fabric_project.local_build import find_inputs
-
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(filter(None, (str(ROOT / "src"), env.get("PYTHONPATH"))))
 
@@ -44,10 +41,6 @@ def main():
             run("-m", "fabric_project.preflight", "--month", month, "--cache", cache, "--report-dir",
                 period / "preflight", "--download-taxi", "--skip-openaq-api")
             run("-m", "fabric_project.openaq_archive", "--cache", cache, "--start", first, "--end", last)
-        # Confirm the two supplied caches really belong to the two reporting months.
-        source = find_inputs(cache)["nyc_taxi"]
-        if not source["source_url"].endswith(f"/yellow_tripdata_{month}.parquet"):
-            raise ValueError(f"Cached taxi source does not match {month}")
         workspace = period / "builds"
         run("-m", "fabric_project.local_build", "--cache", cache, "--workspace", workspace,
             "--start", first, "--end", last, "--require-air", "--prove-rerun", "--report", period / "evidence.json")

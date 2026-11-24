@@ -11,8 +11,15 @@
 
 # CELL code
 sample_month = "2025-06"
-source_path = f"Files/bronze/nyc_taxi/source_month={sample_month}/yellow_tripdata_{sample_month}.parquet"
 silver_table = "silver_taxi_trips"
+
+# CELL code
+import re
+
+# Fabric applies pipeline overrides immediately after the parameter cell.
+if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", sample_month):
+    raise ValueError("Expected YYYY-MM")
+source_path = f"Files/bronze/nyc_taxi/source_month={sample_month}/yellow_tripdata_{sample_month}.parquet"
 
 # CELL markdown
 # ## Read and validate the contract
@@ -20,12 +27,9 @@ silver_table = "silver_taxi_trips"
 # with invented values. Unknown additional columns remain in the output.
 
 # CELL code
-import re
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
-if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", sample_month):
-    raise ValueError("Expected YYYY-MM")
 spark.conf.set("spark.sql.session.timeZone", "America/New_York")
 raw = spark.read.parquet(source_path)
 required = {"tpep_pickup_datetime", "tpep_dropoff_datetime", "PULocationID", "trip_distance", "fare_amount", "total_amount"}

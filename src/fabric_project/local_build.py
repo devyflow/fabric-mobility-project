@@ -14,7 +14,7 @@ import uuid
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 
 from .bronze import BronzeStore, utc_now, write_atomic
 from .http import read_bytes
@@ -27,7 +27,7 @@ def literal(value):
     return "'" + str(value).replace("'", "''") + "'"
 
 
-def find_inputs(cache):
+def find_inputs(cache, taxi_month):
     """Resolve the newest manifest's version per source, never union file globs."""
     selected = {}
     for manifest in sorted((cache / "_runs").glob("*.json"), key=lambda p: (p.stat().st_mtime_ns, p.name)):
@@ -36,6 +36,9 @@ def find_inputs(cache):
     required = {"nyc_taxi", "taxi_zones", "world_bank_gdp", "ecb_fx"}
     if required - selected.keys():
         raise ValueError(f"Missing cached sources: {sorted(required - selected.keys())}")
+    source_url = selected["nyc_taxi"]["source_url"]
+    if not urlsplit(source_url).path.endswith(f"/yellow_tripdata_{taxi_month}.parquet"):
+        raise ValueError(f"Cached taxi file does not match {taxi_month}. Use a Bronze cache for that month.")
     result = {}
     for name in required:
         record = selected[name]
@@ -158,8 +161,8 @@ def main(argv=None):
     parser.add_argument("--report", type=Path, default=ROOT / "reports/local_build.json")
     args = parser.parse_args(argv)
     start, end = date.fromisoformat(args.start), date.fromisoformat(args.end)
-    if end < start or (end - start).days > 3660:
-        raise ValueError("Invalid reporting range")
+    if end < start or (start.year, start.month) != (end.year, end.month):
+        raise ValueError("Use a reporting window within one taxi source month")
     args.workspace.mkdir(parents=True, exist_ok=True)
     lock = args.workspace / "build.lock"
     handle = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -198,7 +201,7 @@ def main(argv=None):
                 record = store.save("ecb_fx", raw, "csv", url, run_id)
                 store.write_manifest(run_id, [record])
             stage("refresh_fx", refresh)
-        inputs = stage("verify_input_checksums", lambda: find_inputs(args.cache))
+        inputs = stage("verify_input_checksums", lambda: find_inputs(args.cache, start.strftime("%Y-%m")))
         report["inputs"] = [{k: v for k, v in value.items() if k != "local_path"} for value in inputs.values()]
         report["reporting_start"], report["reporting_end"] = str(start), str(end)
         con = duckdb.connect(str(run_dir / "analytics.duckdb"))
@@ -243,9 +246,9 @@ def main(argv=None):
         report["status"] = "passed_locally" if report["openaq"]["status"] == "passed" else "partial_success"
         report["completed_at_utc"] = utc_now()
         write_atomic(run_dir / "run.json", json.dumps(report, indent=2).encode())
-        # Publish pointer only after complete successful stages. A failure never replaces it.
-        write_atomic(args.workspace / "latest_success.json", json.dumps({"run_id": run_id, "path": f"runs/{run_id}"}, indent=2).encode())
         write_atomic(args.report, json.dumps(report, indent=2).encode())
+        # The pointer is the publication checkpoint. Write it after the evidence export succeeds.
+        write_atomic(args.workspace / "latest_success.json", json.dumps({"run_id": run_id, "path": f"runs/{run_id}"}, indent=2).encode())
         print(f"Published verified local build {run_id}; OpenAQ: {report['openaq']['status']}", flush=True)
         return 0
     except Exception as error:

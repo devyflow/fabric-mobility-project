@@ -11,7 +11,8 @@ try:
 except ImportError:
     duckdb = None
 
-from fabric_project.local_build import build_tables, literal, main, table_fingerprint, verify
+from fabric_project.bronze import BronzeStore
+from fabric_project.local_build import build_tables, find_inputs, literal, main, table_fingerprint, verify
 
 
 @unittest.skipIf(duckdb is None, "Install requirements-local.txt for integration tests")
@@ -39,6 +40,24 @@ class LocalBuildTests(unittest.TestCase):
 
     def run_build(self):
         build_tables(self.con, self.path, date(2025,6,6), date(2025,6,8))
+
+    def seed_cache(self):
+        store = BronzeStore(Path(self.folder.name) / "cache")
+        capture_id = "a" * 32
+        gdp = [{"pages": 1, "total": 1}, [
+            {"countryiso3code": "USA", "date": "2024", "indicator": {"id": "NY.GDP.MKTP.CD"}, "value": 50}
+        ]]
+        sources = [
+            ("nyc_taxi", self.path.read_bytes(), "parquet", "yellow_tripdata_2025-06.parquet"),
+            ("taxi_zones", b"LocationID,Borough,Zone,service_zone\n1,Manhattan,Example,Yellow\n", "csv", "zones.csv"),
+            ("world_bank_gdp", json.dumps(gdp).encode(), "json", "gdp.json"),
+            ("ecb_fx", b"CURRENCY,CURRENCY_DENOM,TIME_PERIOD,OBS_VALUE\nUSD,EUR,2025-06-06,1.10\n", "csv", "fx.csv"),
+        ]
+        store.write_manifest(capture_id, [
+            store.save(source, raw, extension, f"https://example.test/{name}", capture_id)
+            for source, raw, extension, name in sources
+        ])
+        return store.root
 
     def test_real_sql_preserves_zero_negative_and_null_records(self):
         self.run_build()
@@ -93,6 +112,26 @@ class LocalBuildTests(unittest.TestCase):
         failed = list((workspace / "runs").glob("*/run.json"))
         self.assertEqual(len(failed), 1)
         self.assertEqual(json.loads(failed[0].read_text())["status"], "failed")
+
+    def test_cached_taxi_file_must_match_reporting_month(self):
+        cache = self.seed_cache()
+        self.assertEqual(find_inputs(cache, "2025-06")["nyc_taxi"]["bytes"], self.path.stat().st_size)
+        with self.assertRaisesRegex(ValueError, "Cached taxi file does not match 2024-06"):
+            find_inputs(cache, "2024-06")
+
+    def test_failed_evidence_write_preserves_previous_success_pointer(self):
+        workspace = Path(self.folder.name) / "build"
+        workspace.mkdir()
+        pointer = workspace / "latest_success.json"
+        previous = '{"run_id":"previous-good-run"}'
+        pointer.write_text(previous)
+        report = Path(self.folder.name) / "occupied-directory"
+        report.mkdir()
+        with self.assertRaises(OSError):
+            main(["--workspace", str(workspace), "--cache", str(self.seed_cache()), "--report", str(report)])
+        self.assertEqual(pointer.read_text(), previous)
+        failed, = (workspace / "runs").glob("*/run.json")
+        self.assertEqual(json.loads(failed.read_text())["status"], "failed")
 
     def test_concurrent_build_is_rejected_before_touching_outputs(self):
         workspace = Path(self.folder.name) / "locked"

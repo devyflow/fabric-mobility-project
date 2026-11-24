@@ -1,13 +1,13 @@
 # Fabric mobility and environment project
 
-This project combines NYC taxi trips, OpenAQ air quality, World Bank GDP, and ECB exchange rates in Microsoft Fabric. The build follows the supplied course DOCX and the instructor's clarifications about Git, extensibility, and preserving unusual data.
+The verified DuckDB build combines NYC taxi trips, OpenAQ air quality, World Bank GDP, and ECB exchange rates. This repository also contains the Microsoft Fabric notebooks, ingestion queries, and Warehouse SQL prepared for the course.
 
 The local demonstration uses June 2025 and June 2024. Each month includes observed taxi, air-quality and exchange-rate data, with annual GDP for context.
 
 ## Current implementation
 
 - A local source-verification command with original-response preservation, checksums, run manifests, explicit missing-key status, and bounded retries.
-- Thirty-seven passing tests cover ingestion integrity, pagination, geography, air coverage and interval handling, zero-distance retention, FX conversion, SQL aggregation, reruns, failed publication, and concurrent-build rejection.
+- Thirty-nine passing tests cover input identity, ingestion, air coverage, taxi and FX transformations, repeat runs, and failure recovery.
 - Six importable Fabric notebooks for taxi profiling, Taxi Silver, economics Silver, taxi Gold, air quality Silver/Gold, and the four required analysis views. Python syntax checked; Fabric execution is pending.
 - Power Query M sources for World Bank and ECB Bronze ingestion, plus an OpenAQ pagination function awaiting a credential-backed request. Fabric destinations, parameters, and scheduled execution are pending.
 - Warehouse table definitions, a transactional Lakehouse-to-Warehouse publication batch, reconciliation SQL, and reporting queries. Live SQL execution is pending.
@@ -20,8 +20,8 @@ All four data domains ran locally. OpenAQ used the [public data archive](https:/
 
 ## Start here
 
-1. Open [the verified local report](reports/project_report.html) for charts and reconciliation.
-2. Learn the implementation in [the step-by-step lesson](docs/learn_project.md), then rehearse with [the demo script](docs/demo_script.md).
+1. [Rebuild the tables yourself on a sample](docs/walkthrough.md). Start with one original taxi row, then run the real SQL and change a reporting rule in a scratch database.
+2. Open [the verified local report](reports/project_report.html). Use [the architecture notes](docs/learn_project.md) and [defense script](docs/demo_script.md) after completing the practice build.
 3. Follow [local reproduction](docs/run_locally.md) or [Fabric setup](docs/fabric_setup.md) to run the components.
 4. Inspect [the June 2025 build evidence](reports/local_build.json) and [the June 2024 comparison evidence](reports/comparison_build.json). The earlier source preflight report records a prior API access check.
 
@@ -70,8 +70,4 @@ try {
 
 ## Source of truth
 
-The attached course DOCX defines the required Fabric components. Instructor screenshots add Git and data-retention clarifications. The inventory/web-app examples are unrelated. Weather/time-series export and Great Expectations bots are extra-credit work after completion of the core.
-
-## Completion rule
-
-An authored notebook is not a deployed notebook. A source URL is not a successful ingestion. A table definition is not a validated dataset. Record actual results and keep pending work visible.
+The attached course DOCX defines the required Fabric components. Instructor screenshots add Git and data-retention clarifications. Weather/time-series export and Great Expectations bots are extra-credit work after completion of the core.

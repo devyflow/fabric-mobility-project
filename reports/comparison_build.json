@@ -1,61 +1,61 @@
 {
-  "run_id": "283a76b1f09d4d338ad6dfcad39233b2",
-  "started_at_utc": "2026-11-22T08:41:22.262357+00:00",
+  "run_id": "d592e974d7a14ad199024202eb326e07",
+  "started_at_utc": "2026-11-24T08:17:30.847293+00:00",
   "scope": "Local verification; Fabric execution pending",
   "stages": [
     {
       "name": "verify_input_checksums",
-      "started_at_utc": "2026-11-22T08:41:22.281495+00:00",
+      "started_at_utc": "2026-11-24T08:17:30.856396+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:22.602021+00:00"
+      "completed_at_utc": "2026-11-24T08:17:31.391666+00:00"
     },
     {
       "name": "load_references",
-      "started_at_utc": "2026-11-22T08:41:22.725585+00:00",
+      "started_at_utc": "2026-11-24T08:17:31.498197+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:23.569793+00:00"
+      "completed_at_utc": "2026-11-24T08:17:32.510544+00:00"
     },
     {
       "name": "transform_taxi_silver_and_gold",
-      "started_at_utc": "2026-11-22T08:41:23.569875+00:00",
+      "started_at_utc": "2026-11-24T08:17:32.510624+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:33.906380+00:00"
+      "completed_at_utc": "2026-11-24T08:17:44.640967+00:00"
     },
     {
       "name": "reconcile",
-      "started_at_utc": "2026-11-22T08:41:33.906453+00:00",
+      "started_at_utc": "2026-11-24T08:17:44.641056+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:34.705411+00:00"
+      "completed_at_utc": "2026-11-24T08:17:45.535614+00:00"
     },
     {
       "name": "check_air_capture",
-      "started_at_utc": "2026-11-22T08:41:34.781283+00:00",
+      "started_at_utc": "2026-11-24T08:17:45.613093+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:41:49.929912+00:00"
+      "completed_at_utc": "2026-11-24T08:18:06.441491+00:00"
     },
     {
       "name": "rerun_same_inputs",
-      "started_at_utc": "2026-11-22T08:41:50.679279+00:00",
+      "started_at_utc": "2026-11-24T08:18:07.263084+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:42:03.046177+00:00"
+      "completed_at_utc": "2026-11-24T08:18:33.111419+00:00"
     },
     {
       "name": "rerun_air_capture",
-      "started_at_utc": "2026-11-22T08:42:03.046248+00:00",
+      "started_at_utc": "2026-11-24T08:18:33.111591+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:42:20.084313+00:00"
+      "completed_at_utc": "2026-11-24T08:18:55.945064+00:00"
     },
     {
       "name": "reconcile_rerun",
-      "started_at_utc": "2026-11-22T08:42:20.774675+00:00",
+      "started_at_utc": "2026-11-24T08:18:56.809158+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:42:21.504029+00:00"
+      "completed_at_utc": "2026-11-24T08:18:57.608509+00:00"
     },
     {
       "name": "export_reporting_tables",
-      "started_at_utc": "2026-11-22T08:42:21.504125+00:00",
+      "started_at_utc": "2026-11-24T08:18:57.608589+00:00",
       "status": "passed",
-      "completed_at_utc": "2026-11-22T08:42:21.818930+00:00"
+      "completed_at_utc": "2026-11-24T08:18:57.909916+00:00"
     }
   ],
   "duckdb_version": "2.0.1",
@@ -66,7 +66,7 @@
     "src/fabric_project/http.py": "0345620248b40b49f0dc2f921db3822309d9daf77941803a9531726b389d1593",
     "src/fabric_project/ingest_air.py": "3f1bade75d5bf49acfaf927b520d88a9fcba1106b9c4821b5390fa1d1f20c597",
     "src/fabric_project/local_air.py": "560320c25e07ab451343855bf9fcf97a95cc112592f9aa1290a6c8d7e5de1601",
-    "src/fabric_project/local_build.py": "c1f201f8c89bce80808a041d72ff7940866f89fab85d13357c4be579b79823e2",
+    "src/fabric_project/local_build.py": "028bb6adb7c5cbca75c369391d234fa956f488c74cb7e835e44399f27ff66925",
     "src/fabric_project/openaq_archive.py": "0cda4ed7fe1d1944c88b70fb128d57dafa8abd8c0f44b74ade31e0677e8b4a10",
     "src/fabric_project/preflight.py": "e6954f03005355a16286d740b098216bb90d192251eee068fbf28856e8d2af03",
     "src/fabric_project/quality.py": "78ead1e234df30d2672824a65b83e48794da07902dc39e0495570aa9918d614b",
@@ -74,26 +74,6 @@
     "sql/local_taxi_silver.sql": "73c24521904ff48895cf0a6a2d261abc4bfd4210b109a003414b724de6dc3e7e"
   },
   "inputs": [
-    {
-      "source": "taxi_zones",
-      "sha256": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
-      "bytes": 12331,
-      "path": "taxi_zones/1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed.csv",
-      "source_url": "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv",
-      "run_id": "5a19b6067b494232a57873663747d48d",
-      "ingested_at_utc": "2026-11-22T08:29:43.627970+00:00",
-      "reused_identical_payload": false
-    },
-    {
-      "source": "ecb_fx",
-      "sha256": "7143f5f1a16422080bcd57c88459d8e71de84526fe204894d945accc90549049",
-      "bytes": 5524,
-      "path": "ecb_fx/7143f5f1a16422080bcd57c88459d8e71de84526fe204894d945accc90549049.csv",
-      "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=csvdata&startPeriod=2024-05-25&endPeriod=2024-06-30",
-      "run_id": "5a19b6067b494232a57873663747d48d",
-      "ingested_at_utc": "2026-11-22T08:30:00.052256+00:00",
-      "reused_identical_payload": false
-    },
     {
       "source": "world_bank_gdp",
       "sha256": "9ea7e44fca9f5e66fa298cc2194d3b65f786e396658fd0710d3e35e31013d707",
@@ -112,6 +92,26 @@
       "source_url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2024-06.parquet",
       "run_id": "5a19b6067b494232a57873663747d48d",
       "ingested_at_utc": "2026-11-22T08:30:13.141079+00:00",
+      "reused_identical_payload": false
+    },
+    {
+      "source": "taxi_zones",
+      "sha256": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
+      "bytes": 12331,
+      "path": "taxi_zones/1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed.csv",
+      "source_url": "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv",
+      "run_id": "5a19b6067b494232a57873663747d48d",
+      "ingested_at_utc": "2026-11-22T08:29:43.627970+00:00",
+      "reused_identical_payload": false
+    },
+    {
+      "source": "ecb_fx",
+      "sha256": "7143f5f1a16422080bcd57c88459d8e71de84526fe204894d945accc90549049",
+      "bytes": 5524,
+      "path": "ecb_fx/7143f5f1a16422080bcd57c88459d8e71de84526fe204894d945accc90549049.csv",
+      "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?format=csvdata&startPeriod=2024-05-25&endPeriod=2024-06-30",
+      "run_id": "5a19b6067b494232a57873663747d48d",
+      "ingested_at_utc": "2026-11-22T08:30:00.052256+00:00",
       "reused_identical_payload": false
     }
   ],
@@ -305,5 +305,5 @@
     "air_taxi_correlation": "7367495d7c5fb906916651e579c3c524ea0e4a6a4dd2e49c772097af32211af4"
   },
   "status": "passed_locally",
-  "completed_at_utc": "2026-11-22T08:42:21.819027+00:00"
+  "completed_at_utc": "2026-11-24T08:18:57.909992+00:00"
 }

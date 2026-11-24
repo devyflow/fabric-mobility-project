@@ -1,6 +1,6 @@
 # Project defense walkthrough
 
-The instructor invited you to present your current progress. Lead with the working report and demonstrate how you can trace and verify its results. This walkthrough takes about six minutes. Use the [full lesson](learn_project.md) to practice explaining the code in your own words.
+Run [the practice build](walkthrough.md) first. Bring your own notes on what happens to the $39 trip and how changing the monitor threshold changes the number of matched days. Use those results to explain your choices in your own words. This walkthrough takes about six minutes.
 
 Before the defense, open the [report](../reports/project_report.html), [record trace](../reports/trace_example.json), [June 2025 run evidence](../reports/local_build.json), and [requirement checklist](requirements.md). The report embeds its charts and opens from disk.
 
@@ -28,7 +28,7 @@ Point out what **one row** represents at each step. The project keeps **all 4,32
 
 Open the [June 2025 run evidence](../reports/local_build.json) and show `validation` and `same_input_rerun`.
 
-> The source and Silver row counts match. The Gold counts and financial totals reconcile to the eligible Silver rows. I rebuilt each month from the same inputs and checked the fingerprints of the complete reporting tables. Both runs matched. The test suite has 37 passing tests, including a recovery test that preserves the previous successful report after a failed build.
+> The source and Silver row counts match. The Gold counts and financial totals reconcile to the eligible Silver rows. A rebuild of each month from the same inputs produced the same fingerprints of the reporting tables. The test suite has 39 passing tests, including a recovery test that preserves the previous published run when a new evidence file cannot be written.
 
 ## 5. Report your Fabric progress
 
