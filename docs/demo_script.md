@@ -1,70 +1,51 @@
-# Project breakdown script
+# Project defense walkthrough
 
-This walkthrough takes about seven minutes. Explain the actual local build first, then show which Fabric deployment checks remain. Do not claim cloud execution until it has happened.
+The instructor invited you to present your current progress. Lead with the working report and demonstrate how you can trace and verify its results. This walkthrough takes about six minutes. Use the [full lesson](learn_project.md) to practice explaining the code in your own words.
 
-## Opening
+Before the defense, open the [report](../reports/project_report.html), [record trace](../reports/trace_example.json), [June 2025 run evidence](../reports/local_build.json), and [requirement checklist](requirements.md). The report embeds its charts and opens from disk.
 
-"My project combines taxi activity, air quality and economic context. The required target is Microsoft Fabric, with Bronze, Silver and Gold layers, a Warehouse star schema, and automated refresh. While capacity access is being resolved, I built and tested the source processing and reporting locally."
+## 1. Show what the project answers
 
-Show `docs/requirements.md` and identify the pending Fabric deployment and authenticated Dataflow evidence.
+> My project combines NYC yellow taxi trips, air quality, exchange rates, and annual GDP. It shows where and when taxis were used, how the same charges look in dollars and euros, and how daily pickups and pollution varied together in monitored zones. This report comes from two verified local runs, June 2024 and June 2025.
 
-## Show original evidence
+Show the daily trips chart, then the same-month comparison. There were **3,539,142** in-window pickups in June 2024 and **4,322,940** in June 2025. That is an observed **22.1%** difference between the two months. The report covers those two snapshots.
 
-"I downloaded the official June 2025 Yellow Taxi Parquet file. I retained the exact file, source URL, retrieval time and SHA-256 checksum. A revised source gets a new content version instead of silently replacing the evidence."
+## 2. Follow one record through Bronze, Silver and Gold
 
-Open `reports/local_build.json` and point to the source checksum and input request parameters. Show World Bank annual JSON, ECB daily CSV, TLC monthly Parquet and the OpenAQ archive's dated gzip files. Different formats and frequencies explain the need for standardization.
+Open the [record trace](../reports/trace_example.json). Start with `source_and_silver`, then show `gold_group`.
 
-## Follow one real row
+> Bronze holds the original file and a checksum I can use to verify its exact contents. This Seaport record reports zero miles, a $37.50 base fare and a $39 total charge. Silver adds a pickup date, a pickup hour and a zero-distance flag. The record still contributes one pickup and $39 to Gold. Its Gold row groups all 409 pickups in Seaport on June 1.
 
-Open `reports/trace_example.json`. Read the actual pickup timestamp, original zone, distance and fare. Show its typed Silver fields and `zero_distance` flag. Then point to its exact date/zone Gold group and chosen FX source date.
+Point out what **one row** represents at each step. The project keeps **all 4,322,960** June 2025 source rows in Silver. Twenty have pickup dates outside June and remain visible there. The in-window trips include **134,896** zero-distance records.
 
-"The original row remains. I add fields that make reporting consistent. A flag tells me to investigate a value; it does not delete the trip. This row contributes one trip and its recorded amounts to the daily group."
+## 3. Explain the two reporting joins
 
-Question: Why not remove zero-distance trips? Answer: the source contains positive charges for many such records, so automatic removal would change the financial totals without a justified business rule.
+**Currency.** In the trace, open `chosen_fx`. ECB expressed its May 30 rate as **1.1339 dollars per euro**. The June 1 Seaport total of **$11,014.59** divided by that rate gives about **€9,713.90**. The rate is two days old. A seven-day maximum age prevents indefinite reuse. The GDP panel displays one national observation per year.
 
-## Explain reconciliation
+**Air and mobility.** Show `air_taxi_pair` and the PM2.5 scatterplot. On June 1 the CCNY monitor averaged **3.4042 µg/m³** over 24 hourly observations. The Manhattanville taxi fact has **188 pickups** for the same date and zone. The daily aggregation gives one paired point. A raw join of 188 trips with 24 readings could yield **4,512 rows** and inflate a later sum. The pair rule requires at least 18 observed hours per station-day. Pearson's correlation summarizes the observed linear association within each series. The result covers three monitor locations and can reflect other conditions such as weather.
 
-"The source has 4,322,960 records, and all survive in local Silver. June reporting contains 4,322,940 pickup records. The other 20 have dates outside June and remain in Silver. These counts reconcile exactly."
+## 4. Prove the result can be rebuilt
 
-Open `reports/quality_summary.csv` to show actual flag counts. Explain that negative fare entries are retained and require interpretation. The retained June records sum to $82,040,782.03 in base fare and $118,393,342.44 in recorded total charges. These are different source measures and are not audited business revenue.
+Open the [June 2025 run evidence](../reports/local_build.json) and show `validation` and `same_input_rerun`.
 
-## Show the reporting model
+> The source and Silver row counts match. The Gold counts and financial totals reconcile to the eligible Silver rows. I rebuilt each month from the same inputs and checked the fingerprints of the complete reporting tables. Both runs matched. The test suite has 37 passing tests, including a recovery test that preserves the previous successful report after a failed build.
 
-"FactTaxiDaily has one row per reporting day and pickup zone. The air-quality fact has one row per day, monitoring station, pollutant and unit. If I joined every sensor reading to every trip, I could multiply taxi totals. I aggregate to compatible grains before comparison."
+## 5. Report your Fabric progress
 
-Open `warehouse/01_create_star.sql` or the data dictionary. Explain Date, Zone, FX and GDP dimensions. FX is daily; GDP remains annual national context.
+Open the [requirement checklist](requirements.md). Show a [notebook](../notebooks/02_taxi_silver.ipynb) if asked what is ready for deployment.
 
-## Show charts and currency logic
+> While working on Fabric access, I continued building the processing, validation and reporting locally in DuckDB with real data. The six Fabric notebooks, Dataflow queries, Warehouse SQL and pipeline specification are prepared. A capacity-backed workspace and an authenticated OpenAQ Dataflow connection are needed to demonstrate ingestion into OneLake, PySpark and Delta execution, Warehouse publication, and scheduled refresh.
 
-Open `reports/project_report.html`. Show daily trips, busiest pickup zones, pickup hours and average fare. Explain one measured observation without inferring why it happened.
-
-"The ECB rate is USD per EUR, so EUR equals USD divided by the rate. Weekends use a preceding published rate, with a seven-day freshness limit. I record the source rate date, and all 30 June reporting dates are covered. The USD and EUR comparison uses the same eligible charge records."
-
-If asked whether taxi activity drives GDP, explain that GDP gives annual national context. The taxi sample covers two month snapshots.
-
-## Show the actual air match
-
-"On June 1, the CCNY monitor in Manhattanville had 24 PM2.5 observations with a daily mean of 3.4042 micrograms per cubic meter. The daily taxi table reported 188 pickups in zone 152 on the same date. They form one point in the scatterplot. I used the official taxi-zone boundaries and required at least 18 observed hours per station-day to admit it to the join."
-
-Find `air_station_day` and `air_taxi_pair` in `reports/trace_example.json`. In the report show the coverage chart and one matched series. Explain that Pearson r summarizes a linear association in the available pairs. June 2024 is a same-month comparison.
-
-## Explain reliability and next evidence
-
-"I reran the full local build against the same inputs. The sorted reporting-table fingerprints were unchanged, proving this build did not double-count the month. Tests also confirm that a failed build leaves the previous successful result intact."
-
-Show `same_input_rerun` and the stage log in `reports/local_build.json`. Show the test result in `reports/test_results.txt`.
-
-"I used real OpenAQ observations from its public archive to complete the local report. I prepared the six Fabric notebooks, the Dataflow queries, the Warehouse SQL, and the pipeline specification while resolving workspace access. Fabric deployment, authenticated refresh and scheduled execution are pending."
+If time is limited, show the report, the $39 Seaport trace and the rerun result. Give the Fabric status in one sentence at the end.
 
 ## Questions to rehearse
 
-| Question | Answer to give |
+| Likely question | Answer |
 | --- | --- |
-| Why Bronze, Silver and Gold? | Original evidence, consistent detail, then reporting-ready aggregates. |
-| What happens when the API fails? | Bounded transient retries, explicit failure, no downstream success checkpoint. Authentication errors fail immediately. |
-| What happens on rerun? | The same selected month/window rebuilds its reporting outputs rather than appending duplicate trips. Source revisions keep their provenance. |
-| What does one row represent? | State the grain of the particular source, Silver table or fact being discussed. |
-| Why keep missing values? | Missing is different from zero. Explicit flags and denominators prevent invented measurements. |
-| Why can two sensors not simply be averaged? | They need comparable pollutant, unit, interval and geography, with a stated weighting and coverage policy. |
-| Does correlation show causation? | No. Seasonality, weather, coverage and other factors can affect both measurements. |
-| How can weather be added? | Add an adapter, raw provenance, Silver contract, Gold grain and orchestration dependency without rewriting existing feeds. Implement extra-credit export only after the core is complete. |
+| Why keep zero-distance trips? | Distance and charge are independent source fields. The trace gives a concrete $39 charge that belongs in the reported total. |
+| What does one row represent in each fact? | Taxi is one pickup date and zone. Air is one date, station, pollutant, and unit. The paired result matches zone and date within a pollutant series. |
+| Why divide by 1.1339? | The rate is dollars per euro. Dollars divided by dollars per euro gives euros. |
+| What happens if an input changes or a refresh fails? | A change produces a new checksum and source version. A failed run records the problem and preserves the previous success pointer. |
+| What can you say about pollution? | Present the measured association, the matched day count and the locations covered. A causal claim would require a design that accounts for factors such as weather and other traffic. |
+| Which parts of the assignment can you demonstrate today? | I can show the local source-to-report run, actual data and repeatability checks. I can show the authored Fabric components and explain their connections. Fabric runtime evidence remains pending. |
+| How would you add weather? | Add its own ingestion step and preserve the raw response. Define the cleaned station and timestamp fields, then choose the Gold grouping and join keys before adding it to the report. |
