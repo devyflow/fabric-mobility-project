@@ -1,0 +1,148 @@
+{
+  "execution": "Databricks serverless Lakeflow Job",
+  "trigger": "on demand",
+  "notebook": "databricks/nyc_mobility.py",
+  "notebook_sha256": "014cd66b1ec94150a4dc46724d45ba2f3279b784e1908f9ed79faa5d608ff01a",
+  "source_mode": "Public source captures staged in a Unity Catalog volume",
+  "validated_runs": [
+    {
+      "month": "2025-06",
+      "attempt": "initial",
+      "job_result": "SUCCESS",
+      "spark_version": "4.2.0",
+      "managed_delta_tables_verified": 16,
+      "duckdb_reference_run": "caafcd0d5fcd435b8cc0c93a2c708b71",
+      "verified_input_sha256": {
+        "air_hourly.jsonl": "8cd1c49213c3eba03507f21c640030ac4e0f2a32de0dab798bb3fd74c97d4295",
+        "air_locations.jsonl": "7077be26d46a33c3c621c1109927f871ec5748a9bc5af6be9ff0626fa7186552",
+        "ecb_fx.csv": "2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af",
+        "openaq_originals.zip": "07ad3de4fa2e90bcc911be2332e5adf40f9686b16c2c8d579ccadebec49038d6",
+        "taxi_zones.csv": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
+        "world_bank_gdp.json": "9ea7e44fca9f5e66fa298cc2194d3b65f786e396658fd0710d3e35e31013d707",
+        "yellow_taxi.parquet": "1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6"
+      },
+      "checks": {
+        "source_rows": 4322960,
+        "silver_rows": 4322960,
+        "missing_pickup_date_rows": 0,
+        "outside_reporting_window_rows": 20,
+        "reporting_rows": 4322940,
+        "zero_distance_trips_in_window": 134896,
+        "base_fare_usd": "82040782.0300",
+        "total_charged_usd": "118393342.4400",
+        "unknown_zone_trips": 0,
+        "uncovered_fx_dates": 0,
+        "air_silver_rows": 3610,
+        "rejected_air_rows": 29,
+        "matched_days_by_series": 148
+      },
+      "seaport_first_day": {
+        "report_date": "2025-06-01",
+        "pickup_zone_id": 209,
+        "trip_count": 409,
+        "zero_distance_trip_count": 5,
+        "total_charged_usd": "11014.5900",
+        "total_charged_eur": "9713.8989"
+      },
+      "reporting_table_sha256": {
+        "fact_taxi_daily": "62a94fff2021b102f35e9a96a0c67b3e767fc7f58ac76fe3b9417f71214f0018",
+        "fact_air_quality_daily": "72ebf2cfca631116df46dd378222684df9e74b712bb640068b116c579d4a3e0a",
+        "matched_air_taxi": "2bc408dd3062d0a90f6ac9779e279ef4b12f32da4b2b0ecf594210af0f02ce08"
+      },
+      "matches_local_spark_table_fingerprints": true
+    },
+    {
+      "month": "2024-06",
+      "attempt": "initial",
+      "job_result": "SUCCESS",
+      "spark_version": "4.2.0",
+      "managed_delta_tables_verified": 16,
+      "duckdb_reference_run": "d592e974d7a14ad199024202eb326e07",
+      "verified_input_sha256": {
+        "air_hourly.jsonl": "fbaa70400d77f019953763b0b9d1c80ad8a458cfbd57737408c05d2726ece8e2",
+        "air_locations.jsonl": "7077be26d46a33c3c621c1109927f871ec5748a9bc5af6be9ff0626fa7186552",
+        "ecb_fx.csv": "7143f5f1a16422080bcd57c88459d8e71de84526fe204894d945accc90549049",
+        "openaq_originals.zip": "827c2958d586d2c4d2e8cf0bd517e1da9063bf54df2fba446112b574b57a9245",
+        "taxi_zones.csv": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
+        "world_bank_gdp.json": "9ea7e44fca9f5e66fa298cc2194d3b65f786e396658fd0710d3e35e31013d707",
+        "yellow_taxi.parquet": "677cf14c8347f745b583f012fbdba072334c6c4efa17bfd6a64369f2ba30329c"
+      },
+      "checks": {
+        "source_rows": 3539193,
+        "silver_rows": 3539193,
+        "missing_pickup_date_rows": 0,
+        "outside_reporting_window_rows": 51,
+        "reporting_rows": 3539142,
+        "zero_distance_trips_in_window": 52952,
+        "base_fare_usd": "68741166.3300",
+        "total_charged_usd": "98853306.2500",
+        "unknown_zone_trips": 0,
+        "uncovered_fx_dates": 0,
+        "air_silver_rows": 3613,
+        "rejected_air_rows": 51,
+        "matched_days_by_series": 145
+      },
+      "seaport_first_day": {
+        "report_date": "2024-06-01",
+        "pickup_zone_id": 209,
+        "trip_count": 388,
+        "zero_distance_trip_count": 9,
+        "total_charged_usd": "11365.7600",
+        "total_charged_eur": "10473.4243"
+      },
+      "reporting_table_sha256": {
+        "fact_taxi_daily": "f46c67dbae58110e4caff05c3484ecdf159405ce4a4b3e89fe8100f80729af28",
+        "fact_air_quality_daily": "d3b2a908340d7731a758762c34d379c686e42e355edd4d5ac328fa511571ca1b",
+        "matched_air_taxi": "d97ae897190b1c82a148dcbb5e93e52fc4a3b50c0bba627773ac715da4504450"
+      },
+      "matches_local_spark_table_fingerprints": true
+    },
+    {
+      "month": "2025-06",
+      "attempt": "rerun",
+      "job_result": "SUCCESS",
+      "spark_version": "4.2.0",
+      "managed_delta_tables_verified": 16,
+      "duckdb_reference_run": "caafcd0d5fcd435b8cc0c93a2c708b71",
+      "verified_input_sha256": {
+        "air_hourly.jsonl": "8cd1c49213c3eba03507f21c640030ac4e0f2a32de0dab798bb3fd74c97d4295",
+        "air_locations.jsonl": "7077be26d46a33c3c621c1109927f871ec5748a9bc5af6be9ff0626fa7186552",
+        "ecb_fx.csv": "2fb08c28157499f07126853dc0b645a6f928c07c7bc9a935e658f4202b6481af",
+        "openaq_originals.zip": "07ad3de4fa2e90bcc911be2332e5adf40f9686b16c2c8d579ccadebec49038d6",
+        "taxi_zones.csv": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
+        "world_bank_gdp.json": "9ea7e44fca9f5e66fa298cc2194d3b65f786e396658fd0710d3e35e31013d707",
+        "yellow_taxi.parquet": "1bea7f5b09c744414451fa7fef09fbc5a393ffb1621c859be6ba0df23a14e1b6"
+      },
+      "checks": {
+        "source_rows": 4322960,
+        "silver_rows": 4322960,
+        "missing_pickup_date_rows": 0,
+        "outside_reporting_window_rows": 20,
+        "reporting_rows": 4322940,
+        "zero_distance_trips_in_window": 134896,
+        "base_fare_usd": "82040782.0300",
+        "total_charged_usd": "118393342.4400",
+        "unknown_zone_trips": 0,
+        "uncovered_fx_dates": 0,
+        "air_silver_rows": 3610,
+        "rejected_air_rows": 29,
+        "matched_days_by_series": 148
+      },
+      "seaport_first_day": {
+        "report_date": "2025-06-01",
+        "pickup_zone_id": 209,
+        "trip_count": 409,
+        "zero_distance_trip_count": 5,
+        "total_charged_usd": "11014.5900",
+        "total_charged_eur": "9713.8989"
+      },
+      "reporting_table_sha256": {
+        "fact_taxi_daily": "62a94fff2021b102f35e9a96a0c67b3e767fc7f58ac76fe3b9417f71214f0018",
+        "fact_air_quality_daily": "72ebf2cfca631116df46dd378222684df9e74b712bb640068b116c579d4a3e0a",
+        "matched_air_taxi": "2bc408dd3062d0a90f6ac9779e279ef4b12f32da4b2b0ecf594210af0f02ce08"
+      },
+      "matches_local_spark_table_fingerprints": true
+    }
+  ],
+  "june_2025_same_input_rerun": "All three verified reporting-table fingerprints matched"
+}

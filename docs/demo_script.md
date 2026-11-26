@@ -30,6 +30,8 @@ Open the [June 2025 run evidence](../reports/local_build.json) and show `validat
 
 > The source and Silver row counts match. The Gold counts and financial totals reconcile to the eligible Silver rows. A rebuild of each month from the same inputs produced the same fingerprints of the reporting tables. The test suite has 39 passing tests, including a recovery test that preserves the previous published run when a new evidence file cannot be written.
 
+To demonstrate the Databricks implementation, open a successful run of `NYC Mobility | Verified Delta Snapshot`. Use `run_evidence` to identify the verified Delta schema, then use the [Seaport SQL example](../databricks/README.md#follow-a-result-in-databricks-sql) to find the $11,014.59 daily total. Point to the 20 June 2025 source rows with pickup dates outside the report window and show that Silver still contains all source rows.
+
 ## 5. Report your Fabric progress
 
 Open the [requirement checklist](requirements.md). Show a [notebook](../notebooks/02_taxi_silver.ipynb) if asked what is ready for deployment.

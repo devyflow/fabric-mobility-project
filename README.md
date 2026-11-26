@@ -18,6 +18,8 @@ The local demonstration uses June 2025 and June 2024. Each month includes observ
 
 All four data domains ran locally. OpenAQ used the [public data archive](https://docs.openaq.org/aws/about). The Fabric Trial workspace option was disabled at the last check. Live deployment, the authenticated OpenAQ Dataflow, and cloud validation remain pending. See [requirement coverage](docs/requirements.md).
 
+The [Databricks workflow](databricks/README.md) ran both captured months in a Lakeflow Job. Each successful snapshot produced 16 managed Delta tables and reconciled with the local report. [Verified Databricks runs and June 2025 rerun](reports/databricks_runs.json).
+
 ## Start here
 
 1. [Rebuild the tables yourself on a sample](docs/walkthrough.md). Start with one original taxi row, then run the real SQL and change a reporting rule in a scratch database.

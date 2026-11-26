@@ -1,0 +1,29 @@
+{
+  "name": "NYC Mobility | Verified Delta Snapshot",
+  "description": "Build and reconcile a staged TLC, ECB, World Bank and OpenAQ month.",
+  "max_concurrent_runs": 1,
+  "timeout_seconds": 1200,
+  "queue": {
+    "enabled": true
+  },
+  "parameters": [
+    {
+      "name": "catalog",
+      "default": "workspace"
+    },
+    {
+      "name": "input_directory",
+      "default": "/Volumes/workspace/nyc_mobility_inputs/bronze/2025-06"
+    }
+  ],
+  "tasks": [
+    {
+      "task_key": "build_verified_snapshot",
+      "notebook_task": {
+        "notebook_path": "/Users/<workspace-user>/nyc_mobility/NYC Mobility Snapshot",
+        "source": "WORKSPACE"
+      },
+      "max_retries": 0
+    }
+  ]
+}

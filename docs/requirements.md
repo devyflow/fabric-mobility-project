@@ -35,3 +35,5 @@ Source: the supplied Microsoft Fabric Data Engineering Project DOCX, supplemente
 The local demonstration covers June 2025 and June 2024, with FX fetched from seven days before each window through month end. The same three stations have official taxi-zone assignments and observed PM2.5 or ozone. The comparison describes the observed months. A continuous historical or seasonal analysis requires additional overlapping data.
 
 See the [report](../reports/project_report.html), [2025 evidence](../reports/local_build.json), [2024 evidence](../reports/comparison_build.json) and [implementation lesson](learn_project.md).
+
+The Databricks implementation provides live PySpark, Delta, and on-demand job evidence for both captured months. Execution of the Fabric-specific items above is still pending. [Databricks workflow](../databricks/README.md), [verified workspace results](../reports/databricks_runs.json).
