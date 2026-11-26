@@ -293,11 +293,19 @@ function changePeriod() {
   write("avg-usd", formatted(perTrip(total.matched_usd, total.fx_trip_count), dollars));
   write("avg-eur", formatted(perTrip(total.matched_eur, total.fx_trip_count), euros));
   write("fx-coverage", `${whole.format(total.fx_trip_count)} trips had both a recorded charge and an applicable rate.`);
+  write("converted-totals", total.fx_trip_count > 0
+    ? `Those trips totaled ${dollars.format(total.matched_usd)} in USD and ${euros.format(total.matched_eur)} in EUR.`
+    : "No charges qualified for conversion in this period.");
   const rates = days.map((row) => value(row.usd_per_eur));
   const knownRates = rates.filter(Number.isFinite);
+  const lowRate = Math.min(...knownRates);
+  const highRate = Math.max(...knownRates);
   write("rate-range", knownRates.length
-    ? `${Math.min(...knownRates).toFixed(4)} to ${Math.max(...knownRates).toFixed(4)} USD/EUR during the period`
+    ? `${lowRate.toFixed(4)} to ${highRate.toFixed(4)} USD/EUR during the period`
     : "No eligible daily rates");
+  write("rate-example", knownRates.length && lowRate < highRate
+    ? `A $30 charge converts to ${euros.format(30 / lowRate)} at the lowest rate and ${euros.format(30 / highRate)} at the highest rate.`
+    : "");
   chart("fx-chart", dates, [rates], (number) => number.toFixed(3));
   write("verification", `${whole.format(quality.source_rows)} source trips and ${whole.format(quality.silver_rows)} Silver rows reconciled. ${whole.format(quality.outside_reporting_window_rows)} trips fell outside the reporting month and stayed in Silver.`);
 }

@@ -114,12 +114,14 @@
             <h3>Average charge per trip</h3>
             <dl class="currency"><div><dt>USD</dt><dd id="avg-usd"></dd></div><div><dt>EUR</dt><dd id="avg-eur"></dd></div></dl>
             <p id="fx-coverage"></p>
-            <p class="note">Daily EUR charges equal USD charges divided by the available ECB USD-per-EUR rate. Both averages use the same FX-covered trips.</p>
+            <p id="converted-totals"></p>
+            <p class="note">Daily EUR charges equal USD charges divided by the applicable ECB USD-per-EUR rate. Both amounts use the same trips.</p>
           </article>
           <article class="panel">
             <h3>USD for one euro</h3>
             <p id="rate-range"></p>
             <canvas id="fx-chart" role="img" aria-label="Effective daily ECB US dollars per euro"></canvas>
+            <p class="note" id="rate-example"></p>
           </article>
           <article class="panel wide">
             <h3>June comparisons across years</h3>
@@ -147,7 +149,7 @@
         <div class="links">
           <a href="https://github.com/devyflow/fabric-mobility-project">GitHub repository</a>
           <a href="https://github.com/devyflow/fabric-mobility-project/blob/main/docs/requirements.md">Requirements and evidence</a>
-          <a href="/data/snapshots.json">Download chart data</a>
+          <a href="/data/snapshots.json" download="nyc-mobility-snapshots.json">Download chart data</a>
         </div>
       </section>
     </div>

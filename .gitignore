@@ -2,8 +2,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
-.env
-.env.*
+.env*
 !.env.example
 data/
 *.parquet
@@ -13,6 +12,3 @@ config/local.json
 reports/private/
 /.vercel/
 /dist/
-
-.vercel
-.env*

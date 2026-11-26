@@ -16,7 +16,7 @@ The course brief specifies Microsoft Fabric. The Fabric notebooks, Power Query s
 1. [Rebuild the tables yourself on a sample](docs/walkthrough.md). Start with one original taxi row, then run the real SQL and change a reporting rule in a scratch database.
 2. Open the deployed dashboard and follow the defense walkthrough. The local report is available offline. [Vercel dashboard](https://nyc-mobility-lakehouse.vercel.app), [defense walkthrough](docs/demo_script.md), [local report](reports/project_report.html).
 3. Rebuild the snapshots in Databricks or locally. [Databricks workflow](databricks/README.md), [local reproduction](docs/run_locally.md).
-4. Inspect [the June 2025 build evidence](reports/local_build.json) and [the June 2024 comparison evidence](reports/comparison_build.json). The earlier source preflight report records a prior API access check.
+4. Inspect the two local build records and the cloud export that powers the dashboard. [June 2025 build](reports/local_build.json), [June 2024 build](reports/comparison_build.json), [Databricks dashboard export](reports/dashboard_evidence.json).
 
 ## Run the local checks
 
@@ -29,14 +29,15 @@ $env:PYTHONPATH = 'src'
 python -m unittest discover -s tests -v
 ```
 
-The local demo downloads the public archive without an API key. To verify the separate authenticated OpenAQ path, provide `OPENAQ_API_KEY` through a masked PowerShell prompt.
+The local demo uses the public archive. To check authenticated OpenAQ location discovery, run the masked PowerShell prompt. It writes its report under `data/openaq-check/`. Instructions for capturing hourly data through the API are in the local setup guide. [Authenticated capture](docs/run_locally.md#try-the-separate-authenticated-openaq-path).
 
 ```powershell
+$env:PYTHONPATH = 'src'
 $openaqSecret = Read-Host 'OpenAQ API key' -AsSecureString
 $openaqPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($openaqSecret)
 try {
     $env:OPENAQ_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($openaqPointer)
-    python -m fabric_project.preflight
+    python -m fabric_project.preflight --cache data/openaq-check/bronze --report-dir data/openaq-check
 } finally {
     [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($openaqPointer)
     Remove-Item Env:OPENAQ_API_KEY -ErrorAction SilentlyContinue

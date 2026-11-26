@@ -8,21 +8,21 @@ Both months ran through the same Lakeflow Job on Databricks. The job reconciled 
 
 Independent June 2025 on-demand and scheduled reruns used the same inputs and reproduced all three reporting-table fingerprints. [On-demand run evidence](../reports/databricks_runs.json), [scheduled run evidence](../reports/refresh_evidence.json).
 
-| Month | Taxi rows retained in Silver | Pickups inside the reporting month | Matched date, zone and pollutant rows |
+| Month | Taxi rows retained in Silver | Pickups inside the reporting month | Matched OpenAQ date, zone and pollutant rows |
 | --- | ---: | ---: | ---: |
 | June 2025 | 4,322,960 | 4,322,940 | 148 |
 | June 2024 | 3,539,193 | 3,539,142 | 145 |
 
 ## Prepare the source files
 
-The local project already captured June 2025 and June 2024. Use the raw cache and successful build workspace for the same month. The example uses the cache from this machine. From the project root:
+Install the local dependencies, then prepare each month from the repo root. The collector downloads the sources, verifies each month in DuckDB, and stages the files. [Local setup](../docs/run_locally.md).
 
 ```powershell
-$env:PYTHONPATH = '../../work/analytics_runtime'
-python tools/stage_databricks.py --cache ../../work/fabric-source-cache/bronze --build ../../work/defense-review/2025-06/builds --output ../../work/databricks-upload/2025-06
+python tools/prepare_databricks_month.py --month 2025-06 --work-dir data/databricks/2025-06
+python tools/prepare_databricks_month.py --month 2024-06 --work-dir data/databricks/2024-06
 ```
 
-Use the existing output if the folder is already staged. On a different machine, install [local dependencies](../docs/run_locally.md) and use the cache and build paths from that run. The staging command checks the source bytes, keeps the original OpenAQ archive in a ZIP and exports the normalized hourly observations and reviewed station mapping from the verified local database. The destination has eight files, including `manifest.json` with SHA-256 checksums and independently verified comparison totals. The June 2024 cache on this machine is `../../work/june-2024-inputs`, and its workspace is `../../work/defense-review/2024-06/builds`.
+Each month's `staged` directory contains eight files, including `manifest.json` with SHA-256 checksums and comparison totals. It includes the original OpenAQ archive ZIP, normalized hourly observations and the reviewed station mapping. To reuse an existing verified Bronze capture, add `--reuse-captures PATH` with that month's cache. To upload during staging, supply `--volume-root` and an authenticated `--profile`. The upload writes the manifest last.
 
 ## Run a snapshot
 
@@ -34,14 +34,6 @@ Use the existing output if the folder is already staged. On a different machine,
 The job creates a separate schema for each attempt. The evidence table is the completion marker. A failed attempt can leave intermediate tables in its schema while earlier successful schemas remain available.
 
 The job template uses the same two parameters and allows one run at a time. Set the imported notebook path and input location, then pass the edited JSON to `databricks jobs create --json @path/to/job.json`. The 13:00 UTC daily schedule is paused after the verified scheduled run. To refresh staged data, point `input_directory` at the new version before running the job again. The trial connectivity check reached World Bank. It could not reach TLC, ECB, OpenAQ, or the NYC boundaries endpoint, so the collector uses a separate machine. [Lakeflow Job template](job.template.json), [Lakeflow Jobs configuration](https://docs.databricks.com/aws/en/jobs/configure-job), [job schedules](https://docs.databricks.com/aws/en/jobs/scheduled).
-
-## Collect a new month
-
-The collector fetches the sources for a published TLC month, checks the capture in DuckDB, and stages a new version. Supply `--volume-root` with an authenticated `--profile` to upload it. The manifest uploads last.
-
-```powershell
-python tools/prepare_databricks_month.py --month 2025-06 --work-dir data/refresh-demo
-```
 
 ## Publish the dashboard
 
@@ -82,9 +74,8 @@ Zone 152 is Manhattanville. CCNY's 24 hours of observed PM2.5 are summarized onc
 | Air and matched pairs | Reuse reviewed intervals and station-to-zone mappings from the local OpenAQ capture. Spark computes daily averages and joins by date and zone after the coverage check. |
 | Validate | Compare the totals and check the unique reporting keys. Then write the run evidence and display the daily counts and correlation. |
 
-The same Spark transformations can run locally with `tools/check_spark_snapshot.py` and PySpark 4.1.4. That command verifies the queries in the local Spark engine. The notebook exercises Unity Catalog and Delta writes when run in Databricks.
+With PySpark 4.1.4 and Java 21 available, run the same Spark transformations locally against the staged folders. The Databricks notebook also exercises Unity Catalog and writes Delta tables.
 
 ```powershell
-$env:PYTHONPATH = '../../work/databricks-spark'
-python tools/check_spark_snapshot.py ../../work/databricks-upload/2025-06 ../../work/databricks-upload/2024-06 --evidence ../../work/databricks-spark-checks.json
+python tools/check_spark_snapshot.py data/databricks/2025-06/staged data/databricks/2024-06/staged --evidence data/databricks/spark-checks.json
 ```

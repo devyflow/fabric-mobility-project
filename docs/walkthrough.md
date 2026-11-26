@@ -4,14 +4,13 @@ You are building tables that answer questions about taxi pickups and charges. St
 
 ## Open the practice database
 
-Open PowerShell in the project folder. This machine already has the Python dependencies and the captured June 2025 data.
+From the repository root, install the local dependencies. The full local demo stores its June 2025 capture under `data/demo/2025-06/bronze`. To use another verified capture, pass the folder that contains `_runs` to `--cache`. [Local setup](run_locally.md).
 
 ```powershell
-$env:PYTHONPATH = '../../work/analytics_runtime'
-python -X utf8 -i tools/practice_build.py --cache ../../work/fabric-source-cache/bronze
+python -X utf8 -i tools/practice_build.py --cache data/demo/2025-06/bronze
 ```
 
-Wait for `>>>`. Paste the Python blocks below **one at a time into that same prompt**. The practice database lives in memory, so you can start fresh by typing `exit()` and running the command again. On another machine, follow [local setup](run_locally.md) and point `--cache` at the June 2025 Bronze directory.
+If you still need the input files, expand the Bronze setup instructions below. Wait for `>>>`, then paste the Python blocks **one at a time into that prompt**. The practice database lives in memory, so typing `exit()` and reopening it gives you a fresh start.
 
 ## 1. Open the original file and look at one trip
 
@@ -40,7 +39,7 @@ python -m fabric_project.openaq_archive --cache data/practice/bronze --start 202
 python -X utf8 -i tools/practice_build.py --cache data/practice/bronze
 ```
 
-The commands print their checks and source counts. Look in `data/practice/bronze/_runs` for the manifests. When using the shared runtime on this machine, set `PYTHONPATH` to `src;../../work/analytics_runtime`.
+The commands print their checks and source counts. Look in `data/practice/bronze/_runs` for the manifests.
 
 </details>
 
