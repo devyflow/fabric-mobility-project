@@ -27,9 +27,30 @@ flowchart TD
 
 This diagram describes the Fabric deployment. The local implementation uses the public OpenAQ gzip archive and DuckDB. Station coordinates are matched to official NYC Taxi Zone polygons. The June 2025 and June 2024 run evidence records which stages executed and which inputs they used. [OpenAQ archive](https://docs.openaq.org/aws/about), [NYC Taxi Zones](https://data.cityofnewyork.us/Transportation/NYC-Taxi-Zones/8meu-9t5y/data_preview).
 
+## Databricks and Vercel lineage
+
+The submitted Databricks and Vercel workflow follows this verified path.
+
+```mermaid
+flowchart LR
+    Sources[TLC, OpenAQ, World Bank, ECB] --> Collect[Source collector and checksums]
+    Collect --> Volume[Unity Catalog Bronze volume]
+    Volume --> Job[Lakeflow PySpark and Delta validation]
+    Job --> Snapshot[Verified taxi, air and dimension tables]
+    EPA[EPA hourly NO2 archive] --> Slice[Checksummed NYC rows and site mapping]
+    Slice --> Report[Databricks reporting job]
+    Snapshot --> Report
+    Report --> Export[Checked aggregate JSON]
+    Export --> Vercel[Vercel dashboard]
+```
+
+The dataset checks and immutable next version protect the last successful output. Vercel serves aggregates from the last export. The Databricks trial reached World Bank during the source connectivity check. The external collector handles the remaining feeds. One scheduled build succeeded using the staged files. The recurring job is paused. [Run evidence](../reports/refresh_evidence.json).
+
 ## Ownership and access
 
 The project owner maintains ingestion, transformations, and data definitions. Course reviewers receive only the workspace/report access needed for assessment. Public publishing is a separate decision. Do not enable broader sharing to work around capacity or credential problems.
+
+The production dashboard and Git repository expose reporting aggregates and sanitized evidence. Workspace authentication, Databricks source rows, trial settings, and original course materials stay outside the public deployment.
 
 Fabric connections hold credentials through a verified secure mechanism. Keys never belong in committed M code, notebooks, ordinary configuration files, URL query strings, logs, or screenshots. The local API helper reads an ephemeral environment variable and logs no request headers. API 401/403 failures require credential correction; repeated retries are inappropriate.
 

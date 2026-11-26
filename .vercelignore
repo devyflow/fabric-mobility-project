@@ -1,0 +1,17 @@
+/.git/
+/.vercel/
+/dist/
+/.env*
+/data/
+/dataflows/
+/databricks/
+/docs/
+/notebooks/
+/pipelines/
+/sql/
+/src/
+/tests/
+/tools/
+/warehouse/
+/reports/*
+!/reports/dashboard.json

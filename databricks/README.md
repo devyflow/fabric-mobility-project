@@ -6,7 +6,7 @@
 
 Both months ran through the same Lakeflow Job on Databricks. The job reconciled against DuckDB, and Unity Catalog confirmed 16 managed Delta tables for each successful snapshot. The taxi daily, air daily, and paired taxi–air tables also matched the local PySpark fingerprints in both months.
 
-An independent June 2025 rerun used the same input hashes and reproduced all three reporting-table fingerprints. [Verified run evidence](../reports/databricks_runs.json).
+Independent June 2025 on-demand and scheduled reruns used the same inputs and reproduced all three reporting-table fingerprints. [On-demand run evidence](../reports/databricks_runs.json), [scheduled run evidence](../reports/refresh_evidence.json).
 
 | Month | Taxi rows retained in Silver | Pickups inside the reporting month | Matched date, zone and pollutant rows |
 | --- | ---: | ---: | ---: |
@@ -33,7 +33,23 @@ Use the existing output if the folder is already staged. On a different machine,
 
 The job creates a separate schema for each attempt. The evidence table is the completion marker. A failed attempt can leave intermediate tables in its schema while earlier successful schemas remain available.
 
-The [Lakeflow Job template](job.template.json) uses the same two parameters and allows one run at a time. To recreate it in another workspace, set the imported notebook path and input location, then pass the edited JSON to `databricks jobs create --json @path/to/job.json`. The job runs on demand. For refreshed data, prepare and stage a new verified month and override `input_directory` at run time. [Lakeflow Jobs configuration](https://docs.databricks.com/aws/en/jobs/configure-job).
+The job template uses the same two parameters and allows one run at a time. Set the imported notebook path and input location, then pass the edited JSON to `databricks jobs create --json @path/to/job.json`. The 13:00 UTC daily schedule is paused after the verified scheduled run. To refresh staged data, point `input_directory` at the new version before running the job again. The trial connectivity check reached World Bank. It could not reach TLC, ECB, OpenAQ, or the NYC boundaries endpoint, so the collector uses a separate machine. [Lakeflow Job template](job.template.json), [Lakeflow Jobs configuration](https://docs.databricks.com/aws/en/jobs/configure-job), [job schedules](https://docs.databricks.com/aws/en/jobs/scheduled).
+
+## Collect a new month
+
+The collector fetches the sources for a published TLC month, checks the capture in DuckDB, and stages a new version. Supply `--volume-root` with an authenticated `--profile` to upload it. The manifest uploads last.
+
+```powershell
+python tools/prepare_databricks_month.py --month 2025-06 --work-dir data/refresh-demo
+```
+
+## Publish the dashboard
+
+1. Download the hourly NO₂ archive for each year from EPA AirData. Run the staging tool with the archive, reporting month, and official NYC Taxi Zones GeoJSON. Upload each NYC slice, station mapping, and checksum manifest to its own volume folder. Retain the original national ZIP. [Staging tool](../tools/stage_epa_no2.py), [EPA AirData downloads](https://aqs.epa.gov/aqsweb/airdata/download_files.html), [NYC Taxi Zones](https://data.cityofnewyork.us/Transportation/NYC-Taxi-Zones/8meu-9t5y/data_preview).
+2. Import the publication notebook. Run the exporter with the workspace path of that notebook and one `--snapshot CATALOG.SCHEMA=EPA_VOLUME_FOLDER` for each completed month. The notebook builds NO₂ Silver and air facts, then exports aggregates from the verified Delta snapshots. The exporter checks the result digest and confirms the reporting tables in Unity Catalog. [Publication notebook](publish_dashboard.py), [exporter](../tools/export_dashboard.py).
+3. Run `node site/build.mjs` and deploy the configured Vercel project. The deployment uses aggregate files. Databricks credentials and source trip records stay in their original storage. [Vercel CLI deployment](https://vercel.com/docs/projects/deploy-from-cli).
+
+EPA hours use source GMT fields to calculate New York reporting dates. Silver retains the measured value and qualifier. The aggregates use finite, nonnegative measurements. At sites with parallel instruments, the job chooses the instrument with the most valid distinct hours for that month. Station-days need at least 18 valid hours to enter a taxi comparison. [Dashboard publication evidence](../reports/dashboard_evidence.json).
 
 ## Follow a result in Databricks SQL
 

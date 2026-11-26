@@ -3,6 +3,12 @@
   "description": "Build and reconcile a staged TLC, ECB, World Bank and OpenAQ month.",
   "max_concurrent_runs": 1,
   "timeout_seconds": 1200,
+  "performance_target": "PERFORMANCE_OPTIMIZED",
+  "schedule": {
+    "quartz_cron_expression": "0 0 13 * * ?",
+    "timezone_id": "UTC",
+    "pause_status": "PAUSED"
+  },
   "queue": {
     "enabled": true
   },

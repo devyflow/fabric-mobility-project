@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Explore verified NYC yellow taxi trips, air monitoring, and exchange rates from a Databricks lakehouse.">
+  <meta name="theme-color" content="#113332">
+  <title>NYC Mobility &amp; Air Quality</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/dashboard.js" type="module"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="shell">
+      <div class="topbar">
+        <span class="wordmark"><span class="mark" aria-hidden="true"></span> NYC Mobility</span>
+        <nav aria-label="Dashboard">
+          <a href="#mobility">Mobility</a>
+          <a href="#air">Air quality</a>
+          <a href="#economy">Economy</a>
+          <a href="#pipeline">Pipeline</a>
+        </nav>
+      </div>
+      <div class="hero">
+        <div>
+          <p class="eyebrow">Historical data · Databricks Delta</p>
+          <h1>NYC Mobility <span>&amp; Air Quality</span></h1>
+          <p>Compare yellow taxi demand, monitored air pollution, and trip charges across two June snapshots.</p>
+        </div>
+        <label class="period-control">Reporting period
+          <select id="period" disabled></select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <p id="status" role="status">Loading verified snapshot data…</p>
+    <div id="dashboard" hidden>
+      <dl class="metrics" aria-label="Selected period totals">
+        <div><dt>Yellow taxi trips</dt><dd id="total-trips"></dd><small id="trip-comparison"></small></div>
+        <div><dt>Average base fare</dt><dd id="average-fare"></dd><small>Trips with a recorded base fare</small></div>
+        <div><dt>Total trip charges</dt><dd id="total-charges"></dd><small>Recorded charges in US dollars</small></div>
+        <div><dt>Zero-distance trips</dt><dd id="zero-distance"></dd><small>Retained in trip and fare totals</small></div>
+      </dl>
+
+      <section id="mobility" aria-labelledby="mobility-title">
+        <h2 id="mobility-title">How New York moved</h2>
+        <div class="grid">
+          <article class="panel">
+            <h3>Trips per day</h3>
+            <p id="busiest-day"></p>
+            <canvas id="trips-chart" role="img" aria-label="Daily yellow taxi trip counts"></canvas>
+          </article>
+          <article class="panel">
+            <h3>Average base fare by day</h3>
+            <p>Base fare divided by the number of trips with a recorded fare.</p>
+            <canvas id="fare-chart" role="img" aria-label="Average daily base fare in US dollars"></canvas>
+          </article>
+          <article class="panel">
+            <h3>Busiest pickup zones</h3>
+            <ul class="bars" id="zone-bars"></ul>
+          </article>
+          <article class="panel">
+            <h3>Demand by pickup hour</h3>
+            <p id="busiest-hour"></p>
+            <canvas id="hour-chart" role="img" aria-label="Trips by pickup hour in New York local time"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <section id="air" aria-labelledby="air-title">
+        <h2 id="air-title">What the monitors measured</h2>
+        <div class="grid">
+          <article class="panel wide">
+            <div class="panel-header">
+              <div><h3>Daily concentrations by station</h3><p id="air-coverage"></p></div>
+              <div class="controls">
+                <label>Pollutant <select id="pollutant"></select></label>
+                <label>Station <select id="station"></select></label>
+              </div>
+            </div>
+            <canvas id="air-chart" role="img" aria-label="Daily pollutant concentration at the selected station"></canvas>
+            <p class="note" id="air-note"></p>
+          </article>
+          <article class="panel wide">
+            <div class="panel-header">
+              <div><h3>Taxi activity and pollution</h3><p id="correlation"></p></div>
+              <label>Matched pickup zone <select id="paired-zone"></select></label>
+            </div>
+            <div class="legend" aria-hidden="true">
+              <span><i></i> Taxi trips</span><span><i></i> Concentration</span>
+            </div>
+            <canvas id="paired-chart" role="img" aria-label="Daily taxi and pollution indices in the selected zone"></canvas>
+            <p class="note" id="strongest-zone"></p>
+            <p class="note">Both lines use their own matched-day mean as 100. The comparison shows co-movement. Weather and other emissions also influence measured concentrations.</p>
+          </article>
+          <article class="panel wide">
+            <h3>Taxi and pollution by hour of day</h3>
+            <p id="paired-hours"></p>
+            <div class="legend" aria-hidden="true">
+              <span><i></i> Taxi trips</span><span><i></i> Concentration</span>
+            </div>
+            <canvas id="paired-hour-chart" role="img" aria-label="Hourly taxi and pollution indices in the selected zone"></canvas>
+            <p class="note">Points are means over matched dates for that New York hour. Each line uses its mean across the plotted hours as 100.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="economy" aria-labelledby="economy-title">
+        <h2 id="economy-title">Trip charges and the economy</h2>
+        <div class="grid">
+          <article class="panel">
+            <h3>Average charge per trip</h3>
+            <dl class="currency"><div><dt>USD</dt><dd id="avg-usd"></dd></div><div><dt>EUR</dt><dd id="avg-eur"></dd></div></dl>
+            <p id="fx-coverage"></p>
+            <p class="note">Daily EUR charges equal USD charges divided by the available ECB USD-per-EUR rate. Both averages use the same FX-covered trips.</p>
+          </article>
+          <article class="panel">
+            <h3>USD for one euro</h3>
+            <p id="rate-range"></p>
+            <canvas id="fx-chart" role="img" aria-label="Effective daily ECB US dollars per euro"></canvas>
+          </article>
+          <article class="panel wide">
+            <h3>June comparisons across years</h3>
+            <p>Each row compares June mobility and monitored air with annual US GDP. Air means use the same stations across periods and station-days meeting the coverage threshold.</p>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th scope="col">Period</th><th scope="col">Trips</th><th scope="col">Avg charge USD</th><th scope="col">PM2.5 µg/m³</th><th scope="col">NO₂ ppb</th><th scope="col">US GDP</th></tr></thead>
+                <tbody id="comparison"></tbody>
+              </table>
+            </div>
+            <p class="note">These two June extracts support a same-month comparison. Monitors represent their sampled locations.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="pipeline" aria-labelledby="pipeline-title">
+        <h2 id="pipeline-title">From source files to the dashboard</h2>
+        <ol class="flow">
+          <li><strong>Bronze</strong><span>Archive the source files and record their checksums.</span></li>
+          <li><strong>Silver</strong><span>Standardize trip dates, money, and measurements. Track quality flags.</span></li>
+          <li><strong>Gold</strong><span>Build Delta facts and dimensions. Join trips to air data by local date and zone.</span></li>
+          <li><strong>Publish</strong><span>Validate the totals, export aggregates from Databricks, and serve them on Vercel.</span></li>
+        </ol>
+        <p id="verification"></p>
+        <div class="links">
+          <a href="https://github.com/devyflow/fabric-mobility-project">GitHub repository</a>
+          <a href="https://github.com/devyflow/fabric-mobility-project/blob/main/docs/requirements.md">Requirements and evidence</a>
+          <a href="/data/snapshots.json">Download chart data</a>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer>
+    <div class="shell source-links">
+      <strong>Data sources</strong>
+      <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">NYC TLC</a>
+      <a href="https://docs.openaq.org/aws/about">OpenAQ</a>
+      <a href="https://aqs.epa.gov/aqsweb/airdata/download_files.html">EPA AirData</a>
+      <a href="https://data.ecb.europa.eu/data/datasets/EXR/EXR.D.USD.EUR.SP00.A">ECB</a>
+      <a href="https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=US">World Bank</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -2,11 +2,11 @@
 
 Run [the practice build](walkthrough.md) first. Bring your own notes on what happens to the $39 trip and how changing the monitor threshold changes the number of matched days. Use those results to explain your choices in your own words. This walkthrough takes about six minutes.
 
-Before the defense, open the [report](../reports/project_report.html), [record trace](../reports/trace_example.json), [June 2025 run evidence](../reports/local_build.json), and [requirement checklist](requirements.md). The report embeds its charts and opens from disk.
+Before the defense, open the dashboard, the record trace, and the requirement checklist. Keep the local report for an offline demo. [Vercel dashboard](https://nyc-mobility-lakehouse.vercel.app), [record trace](../reports/trace_example.json), [requirement checklist](requirements.md), [offline report](../reports/project_report.html).
 
 ## 1. Show what the project answers
 
-> My project combines NYC yellow taxi trips, air quality, exchange rates, and annual GDP. It shows where and when taxis were used, how the same charges look in dollars and euros, and how daily pickups and pollution varied together in monitored zones. This report comes from two verified local runs, June 2024 and June 2025.
+> This project combines NYC yellow taxi trips, air quality, exchange rates, and annual US GDP. Databricks builds the Delta tables for June 2024 and June 2025. Vercel displays the aggregates from those runs. OpenAQ provides PM2.5 and ozone. EPA AirData provides NO₂ at local monitoring stations.
 
 Show the daily trips chart, then the same-month comparison. There were **3,539,142** in-window pickups in June 2024 and **4,322,940** in June 2025. That is an observed **22.1%** difference between the two months. The report covers those two snapshots.
 
@@ -20,9 +20,11 @@ Point out what **one row** represents at each step. The project keeps **all 4,32
 
 ## 3. Explain the two reporting joins
 
-**Currency.** In the trace, open `chosen_fx`. ECB expressed its May 30 rate as **1.1339 dollars per euro**. The June 1 Seaport total of **$11,014.59** divided by that rate gives about **€9,713.90**. The rate is two days old. A seven-day maximum age prevents indefinite reuse. The GDP panel displays one national observation per year.
+**Currency.** In the trace, open `chosen_fx`. ECB expressed its May 30 rate as **1.1339 dollars per euro**. The June 1 Seaport total of **$11,014.59** divided by that rate gives about **€9,713.90**. The rate is two days old. A seven-day maximum age prevents indefinite reuse. Show **$27.39** and **€23.79** on the June 2025 dashboard. Each total is divided by the same number of trips with both a charge and an exchange rate. The **$18.98 average base fare** uses the base-fare column and its own count. The GDP panel uses one national observation per year.
 
-**Air and mobility.** Show `air_taxi_pair` and the PM2.5 scatterplot. On June 1 the CCNY monitor averaged **3.4042 µg/m³** over 24 hourly observations. The Manhattanville taxi fact has **188 pickups** for the same date and zone. The daily aggregation gives one paired point. A raw join of 188 trips with 24 readings could yield **4,512 rows** and inflate a later sum. The pair rule requires at least 18 observed hours per station-day. Pearson's correlation summarizes the observed linear association within each series. The result covers three monitor locations and can reflect other conditions such as weather.
+**Air and mobility.** Show `air_taxi_pair` and the PM2.5 chart. On June 1 the CCNY monitor averaged **3.4042 µg/m³** over 24 hourly observations. The Manhattanville taxi fact has **188 pickups** for the same date and zone. Aggregating each side before joining gives one paired point. A raw join of 188 trips with 24 readings could yield **4,512 rows** and inflate a later sum. The pair rule requires at least 18 observed hours per station-day.
+
+Switch to NO₂ and select Queensboro Hill. In June 2025, the 28 matched days produce Pearson `r` of about **−0.41**. That means days with more pickups tended to have lower NO₂ in this sample. Weather, other traffic and local emissions can also influence the result. Open the hourly chart to show why the job also aligns each station reading to local pickup hour.
 
 ## 4. Prove the result can be rebuilt
 
@@ -32,11 +34,13 @@ Open the [June 2025 run evidence](../reports/local_build.json) and show `validat
 
 To demonstrate the Databricks implementation, open a successful run of `NYC Mobility | Verified Delta Snapshot`. Use `run_evidence` to identify the verified Delta schema, then use the [Seaport SQL example](../databricks/README.md#follow-a-result-in-databricks-sql) to find the $11,014.59 daily total. Point to the 20 June 2025 source rows with pickup dates outside the report window and show that Silver still contains all source rows.
 
+Open the scheduled run evidence and locate `PERIODIC`, `SUCCESS`, and the matching table fingerprints. Explain that the run used verified files in Unity Catalog. The internet-facing collector can stage another source version. The recurring daily job is paused. Open the dashboard evidence to see the checked export and the nine reporting Delta tables. [Scheduled run evidence](../reports/refresh_evidence.json), [export evidence](../reports/dashboard_evidence.json).
+
 ## 5. Report your Fabric progress
 
 Open the [requirement checklist](requirements.md). Show a [notebook](../notebooks/02_taxi_silver.ipynb) if asked what is ready for deployment.
 
-> While working on Fabric access, I continued building the processing, validation and reporting locally in DuckDB with real data. The six Fabric notebooks, Dataflow queries, Warehouse SQL and pipeline specification are prepared. A capacity-backed workspace and an authenticated OpenAQ Dataflow connection are needed to demonstrate ingestion into OneLake, PySpark and Delta execution, Warehouse publication, and scheduled refresh.
+> While troubleshooting Fabric access, I built and checked the workflow on real data in DuckDB and Databricks. The dashboard shows the verified Databricks output. The Fabric notebooks, Dataflow queries, Warehouse SQL and pipeline configuration are in Git. Running those Fabric components requires a capacity-backed workspace and an authenticated OpenAQ connection.
 
 If time is limited, show the report, the $39 Seaport trace and the rerun result. Give the Fabric status in one sentence at the end.
 
@@ -49,5 +53,5 @@ If time is limited, show the report, the $39 Seaport trace and the rerun result.
 | Why divide by 1.1339? | The rate is dollars per euro. Dollars divided by dollars per euro gives euros. |
 | What happens if an input changes or a refresh fails? | A change produces a new checksum and source version. A failed run records the problem and preserves the previous success pointer. |
 | What can you say about pollution? | Present the measured association, the matched day count and the locations covered. A causal claim would require a design that accounts for factors such as weather and other traffic. |
-| Which parts of the assignment can you demonstrate today? | I can show the local source-to-report run, actual data and repeatability checks. I can show the authored Fabric components and explain their connections. Fabric runtime evidence remains pending. |
+| Which parts of the assignment can you demonstrate today? | Show Bronze staging, PySpark and managed Delta, the scheduled replay, the report export and the Vercel dashboard. Then show the Fabric artifacts and the remaining workspace requirements. |
 | How would you add weather? | Add its own ingestion step and preserve the raw response. Define the cleaned station and timestamp fields, then choose the Gold grouping and join keys before adding it to the report. |

@@ -11,3 +11,8 @@ data/
 *.tmp
 config/local.json
 reports/private/
+/.vercel/
+/dist/
+
+.vercel
+.env*

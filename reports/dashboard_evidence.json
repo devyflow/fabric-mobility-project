@@ -1,0 +1,51 @@
+{
+  "job_result": "SUCCESS",
+  "execution": "Databricks serverless Lakeflow Job",
+  "dashboard_sha256": "8d6c5279adcab6210cc1a836226ccc82587f0eb12b0e6567b86d0349b74c57d5",
+  "managed_reporting_tables_verified": 9,
+  "notebook_sha256": "84c3bbd5ce0962a796a39c78ec5cb25d75545c33470336aec48e11ab3b1673b6",
+  "months": [
+    {
+      "month": "2025-06",
+      "trips": 4322940,
+      "station_days": 240,
+      "matched_air_taxi_days": 232,
+      "pollutants": [
+        "no2",
+        "o3",
+        "pm25"
+      ],
+      "epa": {
+        "source": "https://aqs.epa.gov/aqsweb/airdata/hourly_42602_2025.zip",
+        "annual_archive_sha256": "c57a0f5394ed8528e5c0c2655c0b379840c62e146e2036b43c679f06e0d103ca",
+        "slice_rows": 2126,
+        "sites": 3,
+        "in_month_rows": 2056,
+        "excluded_quality_rows": 0,
+        "qualified_in_month_rows": 0,
+        "published_hourly_rows": 2056
+      }
+    },
+    {
+      "month": "2024-06",
+      "trips": 3539142,
+      "station_days": 258,
+      "matched_air_taxi_days": 231,
+      "pollutants": [
+        "no2",
+        "o3",
+        "pm25"
+      ],
+      "epa": {
+        "source": "https://aqs.epa.gov/aqsweb/airdata/hourly_42602_2024.zip",
+        "annual_archive_sha256": "638bb4a4500b07fa8b139615ce6534aad66aa3fc75ba0cc58ba1f10d95eae5f0",
+        "slice_rows": 2450,
+        "sites": 4,
+        "in_month_rows": 2360,
+        "excluded_quality_rows": 0,
+        "qualified_in_month_rows": 0,
+        "published_hourly_rows": 2360
+      }
+    }
+  ]
+}

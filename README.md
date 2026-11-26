@@ -1,30 +1,21 @@
-# Fabric mobility and environment project
+# NYC mobility and air quality
 
-The verified DuckDB build combines NYC taxi trips, OpenAQ air quality, World Bank GDP, and ECB exchange rates. This repository also contains the Microsoft Fabric notebooks, ingestion queries, and Warehouse SQL prepared for the course.
+This project combines NYC yellow taxi trips, air monitoring, ECB exchange rates, and annual US GDP. Databricks processes June 2024 and June 2025 into Delta tables. Vercel serves the checked reporting aggregates. [Open the dashboard](https://nyc-mobility-lakehouse.vercel.app).
 
-The local demonstration uses June 2025 and June 2024. Each month includes observed taxi, air-quality and exchange-rate data, with annual GDP for context.
+## What ran
 
-## Current implementation
+- Bronze capture preserves source files and verifies their checksums. OpenAQ supplies observed PM2.5 and ozone. The selected OpenAQ stations lacked NO₂, so the dashboard uses EPA AQS for that pollutant. [OpenAQ archive](https://docs.openaq.org/aws/about), [EPA AirData](https://aqs.epa.gov/aqsweb/airdata/download_files.html).
+- Databricks PySpark normalizes trip and currency fields, retains zero-distance records, and produces daily and hourly tables. The June 2025 build retained 4,322,960 source trips in Silver and reported 4,322,940 June pickups. [Databricks execution evidence](reports/databricks_runs.json).
+- Lakeflow rebuilt the June 2025 Delta tables on a scheduled trigger and reproduced the validated fingerprints. The recurring daily schedule is paused. The source collector runs outside this trial workspace because its runtime could not reach several source hosts. [Scheduled run evidence](reports/refresh_evidence.json).
+- The reporting job exports checked station and zone trends, taxi and air overlays, matched USD/EUR average charges, and two June periods of economic context. The public dashboard updates when a new export is deployed. [Dashboard export evidence](reports/dashboard_evidence.json).
 
-- A local source-verification command with original-response preservation, checksums, run manifests, explicit missing-key status, and bounded retries.
-- Thirty-nine passing tests cover input identity, ingestion, air coverage, taxi and FX transformations, repeat runs, and failure recovery.
-- Six importable Fabric notebooks for taxi profiling, Taxi Silver, economics Silver, taxi Gold, air quality Silver/Gold, and the four required analysis views. Python syntax checked; Fabric execution is pending.
-- Power Query M sources for World Bank and ECB Bronze ingestion, plus an OpenAQ pagination function awaiting a credential-backed request. Fabric destinations, parameters, and scheduled execution are pending.
-- Warehouse table definitions, a transactional Lakehouse-to-Warehouse publication batch, reconciliation SQL, and reporting queries. Live SQL execution is pending.
-- A pipeline activity/dependency specification, tagged notebook parameter cells, recovery policy, data dictionary, and lineage/governance documentation.
-- Two verified local builds with unchanged reporting-table fingerprints on rerun. The June 2025 build retained all 4,322,960 source taxi records in Silver and reported 4,322,940 in-window trips.
-- Real OpenAQ PM2.5 and ozone data from three reviewed NYC stations. The local June 2025 correlation analysis produced 148 date, zone and pollutant pairs.
-- A self-contained report, compact reporting CSVs, quality counts, and two traced examples for the project breakdown session.
-
-All four data domains ran locally. OpenAQ used the [public data archive](https://docs.openaq.org/aws/about). The Fabric Trial workspace option was disabled at the last check. Live deployment, the authenticated OpenAQ Dataflow, and cloud validation remain pending. See [requirement coverage](docs/requirements.md).
-
-The [Databricks workflow](databricks/README.md) ran both captured months in a Lakeflow Job. Each successful snapshot produced 16 managed Delta tables and reconciled with the local report. [Verified Databricks runs and June 2025 rerun](reports/databricks_runs.json).
+The course brief specifies Microsoft Fabric. The Fabric notebooks, Power Query sources, pipeline specification, and Warehouse SQL are prepared for that platform. Their Fabric runs still require a capacity-backed workspace. [Word brief coverage](docs/requirements.md).
 
 ## Start here
 
 1. [Rebuild the tables yourself on a sample](docs/walkthrough.md). Start with one original taxi row, then run the real SQL and change a reporting rule in a scratch database.
-2. Open [the verified local report](reports/project_report.html). Use [the architecture notes](docs/learn_project.md) and [defense script](docs/demo_script.md) after completing the practice build.
-3. Follow [local reproduction](docs/run_locally.md) or [Fabric setup](docs/fabric_setup.md) to run the components.
+2. Open the deployed dashboard and follow the defense walkthrough. The local report is available offline. [Vercel dashboard](https://nyc-mobility-lakehouse.vercel.app), [defense walkthrough](docs/demo_script.md), [local report](reports/project_report.html).
+3. Rebuild the snapshots in Databricks or locally. [Databricks workflow](databricks/README.md), [local reproduction](docs/run_locally.md).
 4. Inspect [the June 2025 build evidence](reports/local_build.json) and [the June 2024 comparison evidence](reports/comparison_build.json). The earlier source preflight report records a prior API access check.
 
 ## Run the local checks
@@ -60,6 +51,8 @@ try {
 | `src/fabric_project/` | Local source checks, raw persistence, and business-rule helpers |
 | `tests/` | Behavior checks; no network calls or real credentials |
 | `dataflows/` | Power Query M sources for Fabric Dataflows Gen2 |
+| `databricks/` | Tested PySpark snapshots, Lakeflow settings, and dashboard publication |
+| `site/` | Vercel dashboard and static build |
 | `notebooks/` | Importable notebooks with teaching notes |
 | `notebooks/source/` | Readable, source-controlled notebook cell definitions |
 | `tools/build_notebooks.py` | Rebuilds notebooks and checks Python syntax |

@@ -1,0 +1,28 @@
+{
+  "execution": "Databricks serverless Lakeflow Job",
+  "trigger": "PERIODIC",
+  "job_result": "SUCCESS",
+  "period": "2025-06",
+  "input_mode": "Checksummed inputs staged in a Unity Catalog volume",
+  "started_utc": "2026-11-26T12:01:02.5100000Z",
+  "completed_utc": "2026-11-26T12:02:59.9930000Z",
+  "managed_delta_tables_verified": 16,
+  "reporting_table_sha256": {
+    "fact_taxi_daily": "62a94fff2021b102f35e9a96a0c67b3e767fc7f58ac76fe3b9417f71214f0018",
+    "fact_air_quality_daily": "72ebf2cfca631116df46dd378222684df9e74b712bb640068b116c579d4a3e0a",
+    "matched_air_taxi": "2bc408dd3062d0a90f6ac9779e279ef4b12f32da4b2b0ecf594210af0f02ce08"
+  },
+  "matches_verified_reporting_tables": true,
+  "daily_schedule": {
+    "pause_status": "PAUSED",
+    "quartz_cron_expression": "0 0 13 * * ?",
+    "timezone_id": "UTC"
+  },
+  "source_connectivity": {
+    "world_bank": "readable",
+    "tlc": "unreachable",
+    "ecb": "unreachable",
+    "openaq": "unreachable",
+    "nyc_zone_polygons": "unreachable"
+  }
+}
