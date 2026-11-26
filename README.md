@@ -8,6 +8,7 @@ This project combines NYC yellow taxi trips, air monitoring, ECB exchange rates,
 - Databricks PySpark normalizes trip and currency fields, retains zero-distance records, and produces daily and hourly tables. The June 2025 build retained 4,322,960 source trips in Silver and reported 4,322,940 June pickups. [Databricks execution evidence](reports/databricks_runs.json).
 - Lakeflow rebuilt the June 2025 Delta tables on a scheduled trigger and reproduced the validated fingerprints. The recurring daily schedule is paused. The source collector runs outside this trial workspace because its runtime could not reach several source hosts. [Scheduled run evidence](reports/refresh_evidence.json).
 - The reporting job exports checked station and zone trends, taxi and air overlays, matched USD/EUR average charges, and two June periods of economic context. The public dashboard updates when a new export is deployed. [Dashboard export evidence](reports/dashboard_evidence.json).
+- The interactive atlas maps 259 NYC taxi-zone IDs. Pick a borough or day, select a zone, and inspect the ranked pickup counts. The daily chart can compare the two Junes or select a map date. The fare converter uses the ECB rate for the selected pickup date. [Open the atlas](https://nyc-mobility-lakehouse.vercel.app/#atlas).
 
 The course brief specifies Microsoft Fabric. The Fabric notebooks, Power Query sources, pipeline specification, and Warehouse SQL are prepared for that platform. Their Fabric runs still require a capacity-backed workspace. [Word brief coverage](docs/requirements.md).
 

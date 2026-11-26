@@ -10,6 +10,8 @@ Before the defense, open the dashboard, the record trace, and the requirement ch
 
 Show the daily trips chart, then the same-month comparison. There were **3,539,142** in-window pickups in June 2024 and **4,322,940** in June 2025. That is an observed **22.1%** difference between the two months. The report covers those two snapshots.
 
+In the pickup atlas, select **Manhattan**, **Jun 1** and **Seaport**. The map shows **409 pickups** for that zone and date in June 2025. **Copy map link** saves this selection for the defense. Reset the map to see the five-borough ranking. In **Daily trend**, turn on the June comparison or switch the measure to **Average base fare**. [Open the Seaport example](https://nyc-mobility-lakehouse.vercel.app/?month=2025-06&borough=Manhattan&day=2025-06-01&zone=209#atlas).
+
 ## 2. Follow one record through Bronze, Silver and Gold
 
 Open the [record trace](../reports/trace_example.json). Start with `source_and_silver`, then show `gold_group`.
