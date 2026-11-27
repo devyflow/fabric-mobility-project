@@ -14,7 +14,7 @@ In the pickup atlas, select **Manhattan**, **Jun 1** and **Seaport**. The map sh
 
 ## 2. Follow one record through Bronze, Silver and Gold
 
-Open the [record trace](../reports/trace_example.json). Start with `source_and_silver`, then show `gold_group`.
+Select **Follow one fare** on the dashboard to show the Seaport record. The link beneath the explanation opens its date and pickup zone on the map. Choose **Zoom to zone** to inspect the neighborhood. In the source record, start with `source_and_silver`, then show `gold_group`. [Trip walkthrough](https://nyc-mobility-lakehouse.vercel.app/#trip-trace), [record trace](../reports/trace_example.json).
 
 > Bronze holds the original file and a checksum I can use to verify its exact contents. This Seaport record reports zero miles, a $37.50 base fare and a $39 total charge. Silver adds a pickup date, a pickup hour and a zero-distance flag. The record still contributes one pickup and $39 to Gold. Its Gold row groups all 409 pickups in Seaport on June 1.
 

@@ -3,7 +3,7 @@ const integer = new Intl.NumberFormat("en-US");
 const shortDay = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 const formatDay = (iso) => shortDay.format(new Date(iso + "T00:00:00Z"));
 const sum = (values) => values.reduce((total, value) => total + value, 0);
-const palette = ["#324954", "#3c625f", "#4d867a", "#87aa90", "#cbb778", "#ffd15b"];
+const palette = ["#f5f1df", "#dee6c6", "#b7d0ac", "#7eb49a", "#40877c", "#17574f"];
 const monthBins = [0, 1, 100, 1000, 10000, 50000];
 const dayBins = [0, 1, 5, 50, 250, 1500];
 const boroughLabels = [
@@ -85,6 +85,7 @@ export function createAtlas(data, onDateChange) {
   let month;
   let sorted = [];
   let activeId;
+  let focused = false;
   let hoverId = null;
   let transform;
   let counts = new Map();
@@ -113,15 +114,17 @@ export function createAtlas(data, onDateChange) {
     }
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.clearRect(0, 0, width, height);
-    const [x0, y0, x1, y1] = extent(sorted);
+    const bounds = focused ? lookup.get(activeId).box : extent(sorted);
+    const pad = focused ? .47 * Math.max(75, bounds[2] - bounds[0], bounds[3] - bounds[1]) : 0;
+    const x0 = bounds[0] - pad, y0 = bounds[1] - pad, x1 = bounds[2] + pad, y1 = bounds[3] + pad;
     const margin = width < 440 ? 14 : 29;
     const scale = Math.min((width - 2 * margin) / (x1 - x0), (height - 56) / (y1 - y0));
     const tx = (width - (x1 - x0) * scale) / 2 - x0 * scale;
     const ty = 26 + (height - 56 - (y1 - y0) * scale) / 2 - y0 * scale;
     transform = { tx, ty, scale };
     const water = context.createLinearGradient(0, 0, width, height);
-    water.addColorStop(0, "#192f39");
-    water.addColorStop(1, "#101f28");
+    water.addColorStop(0, "#eef2e9");
+    water.addColorStop(1, "#cddfdc");
     context.fillStyle = water;
     context.fillRect(0, 0, width, height);
     context.font = "9px Consolas, monospace";
@@ -132,14 +135,14 @@ export function createAtlas(data, onDateChange) {
       const lat = 40.4 + i * step;
       const [, y] = mapPoint(-74, lat);
       if (y < 40 || y > height - 46) continue;
-      context.strokeStyle = "#47606a75";
+      context.strokeStyle = "#88a49a66";
       context.beginPath(); context.moveTo(0, y); context.lineTo(width, y); context.stroke();
-      if (width > 420) { context.fillStyle = "#81979c"; context.fillText(lat.toFixed(2) + "°N", 8, y - 4); }
+      if (width > 420) { context.fillStyle = "#557267"; context.fillText(lat.toFixed(2) + "°N", 8, y - 4); }
     }
     for (let i = 0; i < 22; i++) {
       const [x] = mapPoint(-74.5 + i * step, 40.7);
       if (x < 0 || x > width) continue;
-      context.strokeStyle = "#405a6465";
+      context.strokeStyle = "#8ca79e60";
       context.beginPath(); context.moveTo(x, 0); context.lineTo(x, height); context.stroke();
     }
 
@@ -149,17 +152,20 @@ export function createAtlas(data, onDateChange) {
     context.lineJoin = "round";
     for (const zone of zones) {
       const inBorough = !borough.value || zone.borough === borough.value;
-      context.fillStyle = inBorough ? colorFor(counts.get(zone.id), bins) : "#273a44";
+      context.fillStyle = inBorough ? colorFor(counts.get(zone.id), bins) : "#e2e6d9";
       context.fill(zone.path, "evenodd");
-      context.lineWidth = (inBorough ? .65 : .45) / scale;
-      context.strokeStyle = inBorough ? "#132a31" : "#30434b";
+      context.lineWidth = (focused ? 1.05 : .68) / scale;
+      context.strokeStyle = inBorough && counts.get(zone.id) >= bins[4] ? "#a4c3aa" : inBorough ? "#658578" : "#bbc9bd";
       context.stroke(zone.path);
     }
     for (const zoneId of new Set([activeId, hoverId])) {
       const zone = lookup.get(zoneId);
       if (!zone) continue;
-      context.lineWidth = 2.15 / scale;
-      context.strokeStyle = zoneId === activeId ? "#fff7c3" : "#f5ffff";
+      context.lineWidth = 3.4 / scale;
+      context.strokeStyle = "#28473a";
+      context.stroke(zone.path);
+      context.lineWidth = 1.8 / scale;
+      context.strokeStyle = zoneId === activeId ? "#ffcf53" : "#fffef2";
       context.stroke(zone.path);
     }
     context.restore();
@@ -171,22 +177,48 @@ export function createAtlas(data, onDateChange) {
       if (borough.value && borough.value !== name) continue;
       const [x, y] = mapPoint(lon, lat);
       context.lineWidth = 3;
-      context.strokeStyle = "#172a34e5";
-      context.fillStyle = "#eff3e8";
+      context.strokeStyle = "#edf1e6ed";
+      context.fillStyle = "#244b3f";
       context.strokeText(name.toUpperCase(), x, y);
       context.fillText(name.toUpperCase(), x, y);
     }
-    if (!borough.value && width > 505) {
+    if (!focused && !borough.value && width > 505) {
       const [x, y] = mapPoint(-74.069, 40.669);
       context.font = "italic 11px Georgia, serif";
-      context.fillStyle = "#abc1c4";
+      context.fillStyle = "#4d736e";
       context.fillText("Upper Bay", x, y);
+      const [ox, oy] = mapPoint(-73.891, 40.529);
+      context.fillText("Atlantic Ocean", ox, oy);
     }
     const active = lookup.get(activeId);
     if (active) {
       const [mx, my] = markerPoint(active, hitContext);
       const x = tx + mx * scale;
       const y = ty + my * scale;
+      if (focused) {
+        // Leave room for the selected pin and its callout. Only label visible zone interiors.
+        const occupied = [[x - 23, y - 34, x + Math.min(155, width / 4), y + 12]];
+        context.font = "500 11px 'DM Sans', sans-serif";
+        context.textAlign = "center";
+        context.lineWidth = 3;
+        context.strokeStyle = "#f4f4e8ed";
+        context.fillStyle = "#294f44";
+        for (const zone of sorted) {
+          const [left, top, right, bottom] = zone.box;
+          if (zone === active || tx + right * scale < 0 || tx + left * scale > width
+              || ty + bottom * scale < 0 || ty + top * scale > height) continue;
+          const [cx, cy] = markerPoint(zone, hitContext);
+          const px = tx + cx * scale, py = ty + cy * scale;
+          const half = context.measureText(zone.name).width / 2 + 4;
+          const area = [px - half, py - 11, px + half, py + 4];
+          if (area[0] < 7 || area[1] < 42 || area[2] > width - 7 || area[3] > height - 62
+              || occupied.some(([l, t, r, b]) => area[0] < r && area[2] > l && area[1] < b && area[3] > t)) continue;
+          context.strokeText(zone.name, px, py);
+          context.fillText(zone.name, px, py);
+          occupied.push(area);
+          if (occupied.length > 7) break;
+        }
+      }
       if (width > 505) {
         context.font = "600 11px 'DM Sans', sans-serif";
         const boxWidth = context.measureText(active.name).width + 18;
@@ -194,13 +226,13 @@ export function createAtlas(data, onDateChange) {
         const boxX = toRight ? x + 22 : x - 22 - boxWidth;
         const boxY = Math.max(35, Math.min(height - 57, y - 25));
         if (boxX >= 4 && boxX + boxWidth < width - 4) {
-          context.strokeStyle = "#ffdc83";
+          context.strokeStyle = "#214d40";
           context.lineWidth = 1;
           context.beginPath();
           context.moveTo(x, y);
           context.lineTo(toRight ? boxX : boxX + boxWidth, boxY + 10);
           context.stroke();
-          context.fillStyle = "#172a32f5";
+          context.fillStyle = "#193b32f8";
           context.fillRect(boxX, boxY, boxWidth, 20);
           context.strokeRect(boxX + .5, boxY + .5, boxWidth - 1, 19);
           context.fillStyle = "#ffebad";
@@ -215,6 +247,19 @@ export function createAtlas(data, onDateChange) {
       context.fillStyle = "#ffd15b";
       context.beginPath(); context.arc(x, y, 2, 0, 2 * Math.PI); context.fill();
     }
+    // The display projection has the same nominal scale on both axes at NYC's reference latitude.
+    const pixelsPerMetre = scale * data.grid.units_per_degree / 111320;
+    const length = [25, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
+      .filter((metres) => metres * pixelsPerMetre < Math.min(85, width * .18)).at(-1);
+    if (length) {
+      const end = width - 16, start = end - length * pixelsPerMetre, base = height - 54;
+      context.strokeStyle = context.fillStyle = "#294c40";
+      context.lineWidth = 1.25;
+      context.beginPath(); context.moveTo(start, base - 4); context.lineTo(start, base);
+      context.lineTo(end, base); context.lineTo(end, base - 4); context.stroke();
+      context.textAlign = "right"; context.font = "10px 'DM Sans', sans-serif";
+      context.fillText("≈ " + (length >= 1000 ? length / 1000 + " km" : length + " m"), end, base - 6);
+    }
   }
 
   function queuePaint() {
@@ -227,6 +272,8 @@ export function createAtlas(data, onDateChange) {
     id("share-status").textContent = "";
     id("share-address").hidden = true;
     chooseZone.value = String(zoneId);
+    id("focus-zone").setAttribute("aria-pressed", String(focused));
+    id("focus-zone").textContent = focused ? "Show area" : "Zoom to zone";
     const pickups = counts.get(zoneId);
     id("zone-trips").textContent = integer.format(pickups) + " pickups";
     const share = totalTrips ? (100 * pickups / totalTrips).toFixed(2) + "% of all recorded trips" : "No trips in period";
@@ -244,7 +291,9 @@ export function createAtlas(data, onDateChange) {
       const entry = document.createElement("span");
       const chip = document.createElement("i");
       chip.style.background = palette[i];
-      entry.append(chip, minimum === 0 ? "0" : format.format(minimum) + "+");
+      const next = bins[i + 1];
+      entry.title = next ? integer.format(minimum) + " to " + integer.format(next - 1) + " pickups" : integer.format(minimum) + " pickups or more";
+      entry.append(chip, format.format(minimum) + (next ? "" : "+"));
       return entry;
     }));
   }
@@ -325,15 +374,22 @@ export function createAtlas(data, onDateChange) {
   });
   canvas.addEventListener("pointerleave", () => { hoverId = null; hoverCard.hidden = true; queuePaint(); });
   canvas.addEventListener("click", (event) => { const zone = hit(event); if (zone) selectZone(zone.id); });
-  borough.addEventListener("change", () => refresh(true));
+  borough.addEventListener("change", () => { focused = false; refresh(true); });
   day.addEventListener("change", () => { refresh(); onDateChange(day.value); });
   chooseZone.addEventListener("change", () => selectZone(Number(chooseZone.value)));
+  id("focus-zone").addEventListener("click", () => {
+    focused = !focused;
+    hoverId = null;
+    hoverCard.hidden = true;
+    selectZone(activeId);
+  });
   id("copy-map").addEventListener("click", async () => {
     const url = new URL(window.location.pathname, window.location.origin);
     url.searchParams.set("month", snapshot.month);
     if (borough.value) url.searchParams.set("borough", borough.value);
     if (day.value) url.searchParams.set("day", day.value);
     url.searchParams.set("zone", String(activeId));
+    if (focused) url.searchParams.set("focus", "1");
     url.hash = "atlas";
     try {
       await window.navigator.clipboard.writeText(url.href);
@@ -348,7 +404,7 @@ export function createAtlas(data, onDateChange) {
     }
   });
   id("reset-map").addEventListener("click", () => {
-    day.value = ""; borough.value = ""; refresh(true); onDateChange("");
+    focused = false; day.value = ""; borough.value = ""; refresh(true); onDateChange("");
   });
   new ResizeObserver(queuePaint).observe(canvas);
   document.fonts?.ready.then(queuePaint);
@@ -357,12 +413,15 @@ export function createAtlas(data, onDateChange) {
     setMonth(next, view) {
       snapshot = next;
       month = data.months[next.month];
+      focused = false;
       const requestedDay = view?.get("day") ?? "";
       fillSelect(day, [["", "Full month"], ...month.dates.map((d) => [d, formatDay(d)])], requestedDay);
       if (view) {
         const requestedBorough = view.get("borough");
         borough.value = boroughs.includes(requestedBorough) ? requestedBorough : "";
         activeId = Number(view.get("zone"));
+        const requestedZone = lookup.get(activeId);
+        focused = view.get("focus") === "1" && !!requestedZone && (!borough.value || requestedZone.borough === borough.value);
       }
       refresh(!view);
     },

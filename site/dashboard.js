@@ -1,5 +1,5 @@
 import { createAtlas } from "./atlas.js";
-import { chart } from "./charts.js";
+import { chart, sparkline } from "./charts.js";
 
 const el = (name) => document.getElementById(name);
 const write = (name, text) => { el(name).textContent = text; };
@@ -235,12 +235,18 @@ function changeMonth(mapView) {
     .sort((a, b) => Math.abs(Number(a.month.slice(0, 4)) - Number(selected.month.slice(0, 4)))
       - Math.abs(Number(b.month.slice(0, 4)) - Number(selected.month.slice(0, 4))))[0];
   const { total, quality } = selected;
+  write("cover-period", monthText(selected.month));
+  sparkline("spark-trips", selected.days.map((d) => d.trips), "Pickups", number, "#247362");
+  sparkline("spark-fare", selected.days.map((d) => perTrip(d.base_fare_usd, d.fare_count)), "Average base fare", usd, "#956622");
+  sparkline("spark-charges", selected.days.map((d) => numeric(d.charged_usd)), "Total charges", usd, "#356a74");
+  sparkline("spark-zero", selected.days.map((d) => d.zero_distance_trips), "Zero-distance trips", number, "#92604a");
   write("total-trips", number.format(total.trips));
   write("average-fare", formatted(perTrip(total.base_fare_usd, total.fare_count), usd));
   write("total-charges", "$" + compact.format(Number(total.charged_usd)));
   write("zero-distance", number.format(total.zero_distance_trips));
   write("zero-share", total.trips ? (100 * total.zero_distance_trips / total.trips).toFixed(2) + "% of the month’s pickups" : "Recorded in Silver");
   const difference = peer?.total.trips ? 100 * (total.trips / peer.total.trips - 1) : null;
+  el("trip-comparison").dataset.direction = difference < 0 ? "down" : "up";
   write("trip-comparison", difference == null ? monthText(selected.month) : (difference >= 0 ? "+" : "−") + Math.abs(difference).toFixed(1) + "% vs " + monthText(peer.month));
   el("compare-period").disabled = !peer;
   write("compare-label", peer ? "Compare with " + monthText(peer.month) : "Single reporting period");
@@ -282,6 +288,7 @@ async function getJson(path) {
 }
 
 async function start() {
+  write("status", "Loading the reporting data…");
   try {
     const [report, geo] = await Promise.all([getJson("/data/snapshots.json"), getJson("/data/zone-atlas.json")]);
     snapshots = report.snapshots.slice().sort((a, b) => b.month.localeCompare(a.month));
@@ -308,7 +315,12 @@ async function start() {
     console.error(error);
     el("dashboard").hidden = true;
     el("status").hidden = false;
-    write("status", "The dashboard could not load the reporting files. Reload the page to try again.");
+    write("status", "The reporting files could not load. ");
+    const retry = document.createElement("a");
+    retry.href = window.location.href;
+    retry.textContent = "Reload the dashboard";
+    retry.addEventListener("click", (event) => { event.preventDefault(); window.location.reload(); });
+    el("status").append(retry, ". The trip record and sources are available below.");
   }
 }
 

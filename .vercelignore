@@ -16,3 +16,4 @@
 /reports/*
 !/reports/dashboard.json
 !/reports/zone_atlas.json
+!/reports/trace_example.json

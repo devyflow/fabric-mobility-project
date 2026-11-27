@@ -1,16 +1,54 @@
-const colors = ["#086d69", "#ab4f30"];
+const colors = ["#176c60", "#a55032"];
 const charts = new Map();
 const resize = new ResizeObserver((entries) => {
   for (const { target } of entries) paint(charts.get(target));
 });
 
-function scaleFor(values, bars) {
+// Each summary chart shows one value per reporting day on its own scale.
+export function sparkline(id, values, label, formatter, color) {
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext("2d");
+  const { width, height } = canvas;
+  ctx.clearRect(0, 0, width, height);
+  const known = values.filter(Number.isFinite);
+  const low = Math.min(...known), high = Math.max(...known);
+  const description = known.length ? label + " by day, " + formatter.format(low) + " to " + formatter.format(high) : label + ", no observations";
+  canvas.setAttribute("aria-label", description);
+  canvas.title = description;
+  if (!known.length) return;
+  ctx.strokeStyle = ctx.fillStyle = color;
+  ctx.lineWidth = 2.8;
+  ctx.lineJoin = ctx.lineCap = "round";
+  let previous = false;
+  let lastPoint;
+  ctx.beginPath();
+  values.forEach((value, i) => {
+    if (!Number.isFinite(value)) { previous = false; return; }
+    const x = 5 + i * (width - 10) / Math.max(values.length - 1, 1);
+    const y = high === low ? height / 2 : height - 6 - (value - low) / (high - low) * (height - 12);
+    if (previous) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    lastPoint = [x, y];
+    previous = true;
+  });
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(...lastPoint, 3.6, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function axisTicks(values, bars) {
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
   const margin = (maximum - minimum) * .08 || Math.max(Math.abs(maximum) * .04, .1);
   const low = bars ? Math.min(0, minimum) : minimum >= 0 ? Math.max(0, minimum - margin) : minimum - margin;
   const high = bars ? Math.max(0, maximum) + margin : maximum + margin;
-  return [low, high];
+  const target = (high - low) / 4;
+  const power = 10 ** Math.floor(Math.log10(target));
+  const unit = [1, 2, 2.5, 5, 10].find((size) => size * power >= target) ?? 10;
+  const step = unit * power;
+  const first = Math.floor(low / step);
+  const last = Math.ceil(high / step);
+  return Array.from({ length: last - first + 1 }, (_, i) => Number(((first + i) * step).toPrecision(12)));
 }
 
 function paint(state) {
@@ -27,7 +65,7 @@ function paint(state) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   ctx.clearRect(0, 0, width, height);
-  ctx.font = "11px Consolas, monospace";
+  ctx.font = "11px 'DM Sans', sans-serif";
   ctx.fillStyle = "#506169";
   const observed = series.flatMap((line) => line.values.filter(Number.isFinite));
   if (!observed.length) {
@@ -36,7 +74,8 @@ function paint(state) {
     ctx.fillText("No observations for this selection", 10, 24);
     return;
   }
-  const [low, high] = scaleFor(observed, bars);
+  const ticks = axisTicks(observed, bars);
+  const low = ticks[0], high = ticks.at(-1);
   const left = Math.max(33, ...[tick(low), tick(high)].map((label) => ctx.measureText(label).width + 8));
   const right = width - 13;
   const top = 10;
@@ -50,11 +89,10 @@ function paint(state) {
   ctx.textAlign = "right";
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
-  for (let i = 0; i <= 4; i++) {
-    const v = low + i * (high - low) / 4;
-    ctx.fillStyle = "#52616a";
+  for (const v of ticks) {
+    ctx.fillStyle = "#506557";
     ctx.fillText(tick(v), left - 6, y(v) + 3);
-    ctx.strokeStyle = "#dce2dd";
+    ctx.strokeStyle = "#dbe2d6";
     ctx.beginPath();
     ctx.moveTo(left, y(v));
     ctx.lineTo(right, y(v));
@@ -181,7 +219,7 @@ function bind(canvas, state) {
   canvas.addEventListener("focus", () => inspect(state, state.active ?? state.selectedIndex ?? 0));
   canvas.addEventListener("blur", () => inspect(state, null));
   canvas.addEventListener("keydown", (event) => {
-    const index = state.active ?? 0;
+    const index = state.active ?? state.selectedIndex ?? 0;
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
       inspect(state, index + (event.key === "ArrowRight" ? 1 : -1));
